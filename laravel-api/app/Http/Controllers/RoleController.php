@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RoleRequest;
 use App\Models\Role;
 use Illuminate\Http\Request;
 
@@ -10,28 +11,21 @@ class RoleController extends Controller
     // Display a listing of the resource.
     public function index()
     {
+        $list = Role::orderBy('id', 'desc')->get();
         return response()->json([
-            'total' => Role::count(),
-            'list' => Role::all(),
+            'list' => $list,
         ]);
     }
 
     // Store a newly created resource in storage.
     // $request->input("key_name")
-    public function store(Request $request)
+    public function store(RoleRequest $request)
     {
-        $role = new Role; // create new object
-        $role->name = $request->input('name');
-        $role->code = $request->input('code');
-        $role->description = $request->input('description');
-        $role->status = $request->input('status');
-        $role->test = $request->input('test');
-        $role->save();
-
-        return [
+        $role = Role::create($request->validated());
+        return response()->json([
             'data' => $role,
-            'message' => 'Role inserted successfully',
-        ];
+            'message' => 'Role created successfully',
+        ]);
     }
 
     // Display the specified resource.
@@ -41,28 +35,15 @@ class RoleController extends Controller
     }
 
     // Update the specified resource in storage.
-    public function update(Request $request, string $id)
+    public function update(RoleRequest $request, string $id)
     {
-        $role = Role::find($id);
-        if (! $role) {
-            return [
-                'error' => true,
-                'message' => 'Role not found',
-            ];
-        } else {
-            $role->name = $request->input('name');
-            $role->code = $request->input('code');
-            $role->description = $request->input('description');
-            $role->status = $request->input('status');
-            $role->test = $request->input('test');
-            $role->update();
+        $role = Role::findOrFail($id);
+        $role->update($request->validated());
 
-            return [
-                'data' => $role,
-                'message' => 'Role updated successfully',
-            ];
-        }
-
+        return response()->json([
+            'data' => $role,
+            'message' => 'Role updated successfully',
+        ]);
     }
 
     // Remove the specified resource from storage.
