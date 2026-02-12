@@ -4,41 +4,45 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
-
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 class CustomerController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Get all customers ordered by latest ID
      */
     public function index()
     {
+        $list = Customer::orderBy('id', 'desc')->get();
         return response()->json([
-            'list' => Customer::all(),
+            'list' => $list,
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a new customer into database
      */
     public function store(CustomerRequest $request)
     {
+        // Create new customer with validated data
         $data = Customer::create($request->validated());
-        if (! $data) {
+
+        if (!$data) {
             return response()->json([
                 'error' => [
-                    'message' => 'Insert Customer Failed',
+                    'message' => 'ការបន្ថែមអតិថិជនបានបរាជ័យ',
                 ],
             ], 500);
         }
 
         return response()->json([
             'data' => $data,
-            'message' => 'Insert Customer Successfully',
+            'message' => 'បន្ថែមអតិថិជនបានជោគជ័យ',
         ]);
     }
 
     /**
-     * Display the specified resource.
+     * Get a single customer by ID
      */
     public function show(string $id)
     {
@@ -48,29 +52,33 @@ class CustomerController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update existing customer information
      */
     public function update(CustomerRequest $request, string $id)
     {
+        // Find customer or return 404
         $data = Customer::findOrFail($id);
+
+        // Update with validated data
         $data->update($request->validated());
 
         return response()->json([
             'data' => $data,
-            'message' => 'Update Customer Successfully',
+            'message' => 'កែប្រែព័ត៌មានអតិថិជនបានជោគជ័យ',
         ]);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete customer from database
      */
     public function destroy(string $id)
     {
+        // Find customer or return 404
         $data = Customer::findOrFail($id);
         $data->delete();
 
         return response()->json([
-            'message' => 'Delete Customer Successfully',
+            'message' => 'លុបអតិថិជនបានជោគជ័យ',
         ]);
     }
 }

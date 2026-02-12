@@ -26,3 +26,6 @@ ReactJs list Role
 	>npm install axios
 
 > npm install dayjs // for date
+
++ Create new role
++ Remove Role

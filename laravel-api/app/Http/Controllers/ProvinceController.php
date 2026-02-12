@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProvinceRequest;
 use App\Models\Province;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\Controller;
 class ProvinceController extends Controller
 {
     // Display a listing of the resource.

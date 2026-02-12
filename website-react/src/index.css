@@ -1,6 +1,12 @@
+/* ១. Import Font ពី Google Fonts ប្រសិនបើអ្នកមិនទាន់បានដំឡើងតាម npm */
+@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap');
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* កំណត់ Font ខ្មែរជាចម្បង */
+  font-family: "Kantumruy Pro", system-ui, -apple-system, sans-serif;
+
+  /* គម្លាតបន្ទាត់ ១.៧ គឺល្អបំផុតសម្រាប់អក្សរខ្មែរ កុំឱ្យជាន់ជើងគ្នា */
+  line-height: 1.7;
   font-weight: 400;
 
   color-scheme: light dark;
@@ -13,24 +19,61 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
+/* ២. បង្ខំឱ្យ Element គ្រឹះទាំងអស់ប្រើ Font ខ្មែរ */
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: "Kantumruy Pro", sans-serif;
+  font-size: 15px;
+  /* ទំហំសមល្មមសម្រាប់អក្សរខ្មែរ */
+}
+
+input,
+button,
+select,
+textarea,
+optgroup {
+  font-family: "Kantumruy Pro", sans-serif !important;
+}
+
+/* ៣. ការកំណត់សម្រាប់ Ant Design Components (Message, Modal, Notification) */
+/* បង្ខំ Font ឱ្យ Message Pop-up */
+.ant-message,
+.ant-message-notice,
+.ant-message-custom-content {
+  font-family: "Kantumruy Pro", sans-serif !important;
+}
+
+.ant-message-custom-content>span {
+  font-family: "Kantumruy Pro", sans-serif !important;
+}
+
+/* បង្ខំ Font ឱ្យ Modal (ផ្ទាំងបញ្ជាក់ការលុប ឬ បង្កើតថ្មី) */
+.ant-modal,
+.ant-modal-content,
+.ant-modal-header,
+.ant-modal-title,
+.ant-modal-confirm-body {
+  font-family: "Kantumruy Pro", sans-serif !important;
+}
+
+/* ៤. ការកំណត់សម្រាប់ Link និង Button ធម្មតា */
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: #535bf2;
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 2.5em;
+  /* បន្ថយទំហំបន្តិចឱ្យសមជាមួយអក្សរខ្មែរ */
+  line-height: 1.2;
 }
 
 button {
@@ -44,23 +87,30 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* ៥. Dark/Light Mode តុល្យភាពពណ៌ */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
+    color: #213547;
+    border: 1px solid #ddd;
   }
 }

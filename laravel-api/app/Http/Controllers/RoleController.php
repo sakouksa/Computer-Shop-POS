@@ -5,26 +5,26 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RoleRequest;
 use App\Models\Role;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\Controller;
 class RoleController extends Controller
 {
     // Display a listing of the resource.
-    public function index()
+    public function index(Request $req)
     {
         $list = Role::orderBy('id', 'desc')->get();
         return response()->json([
             'list' => $list,
+            "query" => $req->input("text_search"),
         ]);
     }
 
     // Store a newly created resource in storage.
-    // $request->input("key_name")
     public function store(RoleRequest $request)
     {
         $role = Role::create($request->validated());
         return response()->json([
             'data' => $role,
-            'message' => 'Role created successfully',
+            'message' => 'បានបង្កើតតួនាទីថ្មីដោយជោគជ័យ',
         ]);
     }
 
@@ -42,7 +42,7 @@ class RoleController extends Controller
 
         return response()->json([
             'data' => $role,
-            'message' => 'Role updated successfully',
+            'message' => 'បានកែប្រែទិន្នន័យដោយជោគជ័យ',
         ]);
     }
 
@@ -53,17 +53,16 @@ class RoleController extends Controller
         if (! $role) {
             return [
                 'error' => false,
-                'message' => 'Data not found',
+                'message' => 'រកមិនឃើញទិន្នន័យឡើយ',
             ];
         } else {
             $role->delete();
 
             return [
                 'data' => $role,
-                'message' => 'Role deleted successfully',
+                'message' => 'បានលុបទិន្នន័យដោយជោគជ័យ',
             ];
         }
-
     }
 
     public function changeStatus(Request $request, $id)
@@ -72,7 +71,7 @@ class RoleController extends Controller
         if (! $role) {
             return [
                 'error' => true,
-                'message' => 'Role not found',
+                'message' => 'រកមិនឃើញតួនាទីឡើយ',
             ];
         } else {
             $role->status = $request->input('status');
@@ -80,7 +79,7 @@ class RoleController extends Controller
 
             return [
                 'data' => $role,
-                'message' => 'Role status ('.$role->status.') changed successfully',
+                'message' => 'ស្ថានភាពត្រូវបានផ្លាស់ប្តូរដោយជោគជ័យ',
             ];
         }
     }
