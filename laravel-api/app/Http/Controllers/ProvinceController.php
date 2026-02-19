@@ -6,13 +6,23 @@ use App\Http\Requests\ProvinceRequest;
 use App\Models\Province;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+
 class ProvinceController extends Controller
 {
     // Display a listing of the resource.
-    public function index()
+    public function index(Request $req)
     {
+        $province = Province::query(); //ORM eloquent
+        if ($req->has("text_search")) {
+            // $role->where("name", "=", $req->input("text_search")); // ទាល់តែដូចគ្នាបាន search filter ចេញ
+            $province->where("name", "LIKE", "%" . $req->input("text_search") . "%"); //Function នេះ ស្រដៀងក៌វា search filter ចេញដែលគេប្រើ "LIKE"
+        };
+        if ($req->has("status")) {
+            $province->where("status", "=", $req->input("status"));
+        }
+        $list = $province->orderBy('id', 'desc')->get();
         return response()->json([
-            'list' => Province::all(),
+            'list' => $list,
         ]);
     }
 
@@ -31,7 +41,7 @@ class ProvinceController extends Controller
         return response()->json(
             [
                 'data' => $data,
-                'message' => 'Insert success',
+                'message' => 'រក្សាទុកបានជោគជ័យ',
             ]
         );
     }
@@ -58,7 +68,7 @@ class ProvinceController extends Controller
         if (! $data) {
             return response()->json([
                 'error' => [
-                    'update' => 'Update Data not found!',
+                    'update' => 'រកមិនឃើញទិន្នន័យដើម្បីកែប្រែឡើយ!',
                 ],
             ]);
         } else {
@@ -66,7 +76,7 @@ class ProvinceController extends Controller
             $data->update();
 
             return response()->json([
-                'message' => 'Update data Success',
+                'message' => 'ធ្វើបច្ចុប្បន្នភាពបានជោគជ័យ',
             ]);
         }
     }
@@ -78,14 +88,14 @@ class ProvinceController extends Controller
         if (! $data) {
             return response()->json([
                 'error' => [
-                    'delete' => 'Data not found!',
+                    'delete' => 'រកមិនឃើញទិន្នន័យដែលត្រូវលុបឡើយ!',
                 ],
             ]);
         } else {
             $data->delete();
 
             return response()->json([
-                'message' => 'Delete success',
+                'message' => 'លុបទិន្នន័យបានជោគជ័យ',
             ]);
         }
     }

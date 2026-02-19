@@ -6,15 +6,23 @@ use App\Http\Requests\RoleRequest;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+
 class RoleController extends Controller
 {
     // Display a listing of the resource.
     public function index(Request $req)
     {
-        $list = Role::orderBy('id', 'desc')->get();
+        $role = Role::query(); //ORM eloquent
+        if ($req->has("text_search")) {
+            // $role->where("name", "=", $req->input("text_search")); // ទាល់តែដូចគ្នាបាន search filter ចេញ
+            $role->where("name", "LIKE", "%" . $req->input("text_search") . "%"); //Function នេះ ស្រដៀងក៌វា search filter ចេញដែលគេប្រើ "LIKE"
+        };
+        if ($req->has("status")) {
+            $role->where("status", "=", $req->input("status"));
+        }
+        $list = $role->orderBy('id', 'desc')->get();
         return response()->json([
             'list' => $list,
-            "query" => $req->input("text_search"),
         ]);
     }
 

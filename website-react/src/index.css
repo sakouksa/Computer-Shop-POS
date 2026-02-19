@@ -1,55 +1,134 @@
-/* ១. Import Font ពី Google Fonts ប្រសិនបើអ្នកមិនទាន់បានដំឡើងតាម npm */
+/* ១. Import Font ពី Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap');
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.layout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  background-color: #fff;
+  height: 80px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.txt-brandname {
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.txt-username {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.layout-logo {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+}
+
+.layout-profile {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.main-page-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
 
 :root {
   /* កំណត់ Font ខ្មែរជាចម្បង */
   font-family: "Kantumruy Pro", system-ui, -apple-system, sans-serif;
-
-  /* គម្លាតបន្ទាត់ ១.៧ គឺល្អបំផុតសម្រាប់អក្សរខ្មែរ កុំឱ្យជាន់ជើងគ្នា */
   line-height: 1.7;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ២. បង្ខំឱ្យ Element គ្រឹះទាំងអស់ប្រើ Font ខ្មែរ */
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
   font-family: "Kantumruy Pro", sans-serif;
   font-size: 15px;
-  /* ទំហំសមល្មមសម្រាប់អក្សរខ្មែរ */
 }
 
+/* បង្ខំឱ្យ Element គ្រប់គ្រងទិន្នន័យប្រើ Font ខ្មែរ */
 input,
 button,
 select,
 textarea,
-optgroup {
+optgroup,
+.ant-input,
+.ant-select,
+.ant-btn,
+.ant-table {
   font-family: "Kantumruy Pro", sans-serif !important;
 }
 
 /* ៣. ការកំណត់សម្រាប់ Ant Design Components (Message, Modal, Notification) */
+
 /* បង្ខំ Font ឱ្យ Message Pop-up */
 .ant-message,
 .ant-message-notice,
-.ant-message-custom-content {
-  font-family: "Kantumruy Pro", sans-serif !important;
-}
-
+.ant-message-custom-content,
 .ant-message-custom-content>span {
   font-family: "Kantumruy Pro", sans-serif !important;
 }
 
-/* បង្ខំ Font ឱ្យ Modal (ផ្ទាំងបញ្ជាក់ការលុប ឬ បង្កើតថ្មី) */
+/* បន្ថែមថ្មី៖ បង្ខំ Font ឱ្យ Notification (សារដែលលោតនៅខាងស្តាំដៃ) */
+.ant-notification,
+.ant-notification-notice,
+.ant-notification-notice-message,
+.ant-notification-notice-description,
+.ant-notification-notice-close {
+  font-family: "Kantumruy Pro", sans-serif !important;
+}
+
+/* បង្ខំ Font ឱ្យ Modal */
 .ant-modal,
 .ant-modal-content,
 .ant-modal-header,
@@ -72,7 +151,6 @@ a:hover {
 
 h1 {
   font-size: 2.5em;
-  /* បន្ថយទំហំបន្តិចឱ្យសមជាមួយអក្សរខ្មែរ */
   line-height: 1.2;
 }
 
@@ -90,11 +168,6 @@ button {
 
 button:hover {
   border-color: #646cff;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
 /* ៥. Dark/Light Mode តុល្យភាពពណ៌ */

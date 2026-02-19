@@ -1,36 +1,71 @@
 import React from "react";
 import { Button, Result } from "antd";
 import { useNavigate } from "react-router-dom";
+import { HomeOutlined } from "@ant-design/icons";
 
 const RouteNoFound = () => {
   const navigate = useNavigate();
 
   return (
-    <Result
-      status="404"
-      title={<span style={{ fontWeight: "bold" }}>៤០៤</span>} // ប្រើលេខខ្មែរឱ្យមើលទៅប្លែកភ្នែក
-      subTitle={
-        <div style={{ fontSize: "16px" }}>
-          <strong
-            style={{ display: "block", fontSize: "20px", marginBottom: "8px" }}
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "70vh",
+        paddingBottom: "100px",
+        background: "transparent",
+      }}
+    >
+      <Result
+        status="404"
+        title={
+          <span
+            style={{
+              fontSize: "72px",
+              fontWeight: "900",
+              color: "#d4af37",
+              letterSpacing: "4px",
+              textShadow: "2px 2px 4px rgba(0,0,0,0.1)",
+            }}
           >
-            រកមិនឃើញទំព័រដែលអ្នកស្នើសុំឡើយ!
-          </strong>
-          សុំទោស! ទំព័រនេះប្រហែលជាត្រូវបានលុប ឬផ្លាស់ប្តូរទីតាំងថ្មី។
-          <br /> សូមពិនិត្យមើលអាសយដ្ឋាន URL ឡើងវិញម្តងទៀត។
-        </div>
-      }
-      extra={
-        <Button
-          type="primary"
-          size="large" // ពង្រីកប៊ូតុងឱ្យធំបន្តិចដើម្បីឱ្យទាក់ទាញ
-          onClick={() => navigate("/")}
-          style={{ borderRadius: "8px", height: "auto", padding: "8px 24px" }}
-        >
-          ត្រឡប់ទៅកាន់ទំព័រដើម
-        </Button>
-      }
-    />
+            ៤០៤
+          </span>
+        }
+        subTitle={
+          <div style={{ marginTop: "10px" }}>
+            <h2
+              style={{ color: "#1a1a1a", fontWeight: "bold", fontSize: "24px" }}
+            >
+              រកមិនឃើញទំព័រដែលអ្នកស្វែងរក!
+            </h2>
+            <p style={{ color: "#8c8c8c", fontSize: "16px" }}>
+              សុំទោស! ទំព័រដែលអ្នកកំពុងព្យាយាមចូលមើល ប្រហែលជាត្រូវបានផ្លាស់ប្តូរ{" "}
+              <br />
+              ឬអាសយដ្ឋាន URL មិនត្រឹមត្រូវ។
+            </p>
+          </div>
+        }
+        // បន្ថែមប៊ូតុងចុចត្រឡប់ទៅទំព័រដើមនៅទីនេះ
+        extra={
+          <Button
+            type="primary"
+            icon={<HomeOutlined />}
+            onClick={() => navigate("/")}
+            style={{
+              background: "#332f2e", // ពណ៌ដូច Sidebar Item
+              borderColor: "#332f2e",
+              borderRadius: "8px",
+              height: "40px",
+              padding: "0 24px",
+              fontWeight: "600",
+            }}
+          >
+            ត្រឡប់ទៅកាន់ទំព័រដើម
+          </Button>
+        }
+      />
+    </div>
   );
 };
 

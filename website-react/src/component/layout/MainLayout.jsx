@@ -1,39 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
-  DesktopOutlined,
-  FileOutlined,
-  PieChartOutlined,
-  UserOutlined,
-  BellOutlined,
-  SettingOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
-import {
-  Input,
   Layout,
   Menu,
+  Input,
   Space,
   theme,
   Avatar,
   Badge,
   Dropdown,
   ConfigProvider,
+  Typography,
 } from "antd";
-import { Outlet, useNavigate } from "react-router-dom";
-import logo from "../../assets/image/logo.png";
-import profile from "../../assets/image/profile.jpg";
-import { FaUserTag } from "react-icons/fa6";
+
+// --- Import Icons ---
 import {
-  MdProductionQuantityLimits,
+  UserOutlined,
+  SettingOutlined,
+  BellOutlined,
+  LogoutOutlined,
+  SafetyCertificateOutlined,
+  SearchOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
+
+import {
   MdDashboardCustomize,
-  MdRoundaboutRight,
+  MdPointOfSale,
+  MdProductionQuantityLimits,
+  MdOutlinePayments,
+  MdOutlineLanguage,
+  MdOutlineLocationCity,
 } from "react-icons/md";
-import { AiFillCustomerService } from "react-icons/ai";
-import { FaUserFriends, FaUserClock } from "react-icons/fa";
-import { BiSolidUserCheck } from "react-icons/bi";
-import { RiCustomerService2Fill } from "react-icons/ri";
+
+import { RiCustomerService2Fill, RiUserSharedLine } from "react-icons/ri";
+import { BiCategoryAlt, BiSolidUserBadge } from "react-icons/bi";
+import { AiOutlineShoppingCart, AiOutlineUsergroupAdd } from "react-icons/ai";
+import { BsCashStack } from "react-icons/bs";
+import { CiCloudOn } from "react-icons/ci";
+
+// Assets
+import logo from "../../assets/img/pos.jpg";
+import profile from "../../assets/image/profile.jpg";
 
 const { Header, Content, Footer, Sider } = Layout;
+const { Text } = Typography;
 
 function getItem(label, key, icon, children) {
   return { key, icon, children, label };
@@ -41,19 +52,107 @@ function getItem(label, key, icon, children) {
 
 const items = [
   getItem("ផ្ទាំងគ្រប់គ្រង", "/", <MdDashboardCustomize />),
-  getItem("អតិថិជន", "customer", <RiCustomerService2Fill />),
-  getItem("ផលិតផល", "product", <MdProductionQuantityLimits />),
-  getItem("អំពីយើង", "about", <MdRoundaboutRight />),
-  getItem("តួនាទី", "role", <BiSolidUserCheck />),
-  getItem("អ្នកប្រើប្រាស់", "sub1", <FaUserFriends />, [
-    getItem("បញ្ជីអ្នកប្រើប្រាស់", "/user/list", <FaUserFriends />),
-    getItem("កំណត់តួនាទី", "/user/role", <FaUserTag />),
+  getItem("ការលក់", "sales", <MdPointOfSale />, [
+    getItem("ផ្ទាំងលក់ POS", "/pos", <MdPointOfSale />),
+    getItem("បញ្ជីលក់/វិក្កយបត្រ", "/orders", <AiOutlineShoppingCart />),
+  ]),
+
+  getItem(
+    "របាយការណ៍",
+    "report",
+    <MdDashboardCustomize style={{ color: "#d4af37" }} />,
+    [
+      getItem("របាយការណ៍លក់", "/report/to_sales", <BsCashStack />),
+      getItem("បញ្ជីវិក្កយបត្រ", "/order", <FileTextOutlined />),
+      getItem("របាយការណ៍ទិញចូល", "/report/purchase", <AiOutlineShoppingCart />),
+      getItem("របាយការណ៍ចំណាយ", "/report/expense", <MdOutlinePayments />),
+    ],
+  ),
+
+  getItem("អតិថិជន", "customer", <RiCustomerService2Fill />, [
+    getItem("បញ្ជីអតិថិជន", "/customer", <AiOutlineUsergroupAdd />),
+    getItem("ប្រភេទអតិថិជន", "/customer_type", <BiCategoryAlt />),
+  ]),
+
+  getItem("សារពើភ័ណ្ឌ", "inventory", <MdProductionQuantityLimits />, [
+    getItem("បញ្ជីផលិតផល", "/product", <MdProductionQuantityLimits />),
+    getItem("ប្រភេទផលិតផល", "/category", <BiCategoryAlt />),
+  ]),
+
+  getItem("ការទិញចូល", "purchase", <CiCloudOn />, [
+    getItem("បញ្ជីទិញចូល", "/purchase", <AiOutlineShoppingCart />),
+    getItem("អ្នកផ្គត់ផ្គង់", "/supplier", <RiUserSharedLine />),
+  ]),
+
+  getItem("ចំណាយផ្សេងៗ", "expense", <BsCashStack />, [
+    getItem("បញ្ជីចំណាយ", "/expense", <MdOutlinePayments />),
+    getItem(
+      "ប្រភេទចំណាយ",
+      "/expense-type",
+      <BiCategoryAlt style={{ color: "#d4af37" }} />,
+    ),
+  ]),
+
+  getItem("បុគ្គលិក", "employee", <AiOutlineUsergroupAdd />, [
+    getItem("បញ្ជីបុគ្គលិក", "/employee", <UserOutlined />),
+    getItem(
+      "បើកប្រាក់បៀវត្ស",
+      "/payroll",
+      <BsCashStack style={{ color: "#d4af37" }} />,
+    ),
+  ]),
+
+  getItem("អ្នកប្រើប្រាស់", "user", <UserOutlined />, [
+    getItem("បញ្ជីអ្នកប្រើប្រាស់", "/list", <UserOutlined />),
+    getItem("កំណត់តួនាទី", "/role", <BiSolidUserBadge />),
+    getItem("សិទ្ធិប្រើប្រាស់", "/permission", <SafetyCertificateOutlined />),
+  ]),
+
+  getItem("ការកំណត់", "settings", <SettingOutlined />, [
+    getItem("ភាសា", "/lang", <MdOutlineLanguage />),
+    getItem("ខេត្ត/ក្រុង", "/province", <MdOutlineLocationCity />),
+    getItem("រូបិយវត្ថុ", "/currency", <BsCashStack />),
+    getItem(
+      "វិធីសាស្ត្រទូទាត់ប្រាក់",
+      "/payment_method",
+      <MdOutlinePayments />,
+    ),
   ]),
 ];
 
 const MainLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+
+  const [openKeys, setOpenKeys] = useState([]);
+
+  const onOpenChange = (keys) => {
+    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
+    const rootSubmenuKeys = [
+      "sales",
+      "report",
+      "customer",
+      "inventory",
+      "purchase",
+      "expense",
+      "employee",
+      "user",
+      "settings",
+    ];
+
+    if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+      setOpenKeys(keys);
+    } else {
+      setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
+    }
+  };
+
+  useEffect(() => {
+    const path = location.pathname.split("/")[1];
+    if (path) setOpenKeys([path]);
+  }, [location.pathname]);
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -90,45 +189,18 @@ const MainLayout = () => {
             </div>
             <div style={{ fontSize: "11px", color: "#8c8c8c" }}>២ នាទីមុន</div>
           </div>
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              background: "#1890ff",
-              borderRadius: "50%",
-              marginTop: 6,
-            }}
-          />
         </Space>
-      ),
-    },
-    { type: "divider" },
-    {
-      key: "all",
-      label: (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "4px 0",
-            color: "#1890ff",
-            fontWeight: 500,
-            fontSize: "13px",
-          }}
-        >
-          មើលការជូនដំណឹងទាំងអស់
-        </div>
       ),
     },
   ];
 
   return (
-    // ប្រើ ConfigProvider ដើម្បីប្តូរស្ទាយ Menu ឱ្យដូច Shadcn
     <ConfigProvider
       theme={{
         components: {
           Menu: {
             itemBg: "transparent",
-            itemSelectedBg: "#332f2e", // ពណ៌ត្នោតដិតដូចក្នុងរូបភាព
+            itemSelectedBg: "#332f2e",
             itemSelectedColor: "#ffffff",
             itemHoverBg: "#f1f5f9",
             itemColor: "#64748b",
@@ -139,62 +211,69 @@ const MainLayout = () => {
       }}
     >
       <Layout style={{ minHeight: "100vh" }}>
-        <style>
-          {`
-            .ant-layout-sider {
-              background-color: #f8f9fa !important;
-              border-right: 1px solid #e5e7eb;
-            }
-            .ant-menu-root {
-              border-inline-end: none !important;
-            }
-            .section-label {
-              padding: 20px 24px 8px;
-              font-size: 11px;
-              font-weight: 700;
-              color: #94a3b8;
-              text-transform: uppercase;
-            }
-          `}
-        </style>
-
         <Sider
           collapsible
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
-          width={260}
-          theme="light" // ប្តូរទៅ Light ដើម្បីងាយស្រួលយោងពណ៌
+          width={280}
+          theme="light"
+          style={{
+            overflow: "auto",
+            height: "100vh",
+            position: "fixed",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            zIndex: 1001,
+            boxShadow: "2px 0 8px 0 rgba(29,33,41,.05)",
+            borderRight: "1px solid #e5e7eb",
+          }}
         >
           <div
             style={{
               height: 64,
               display: "flex",
               alignItems: "center",
-              marginBottom: 0,
-              justifyContent: "center",
+              padding: "0 20px",
+              borderBottom: "1px solid #f0f0f0",
+              background: "#fff",
+              justifyContent: collapsed ? "center" : "flex-start",
             }}
           >
-            <span
-              style={{
-                color: "#1a1a1a",
-                fontWeight: "bold",
-                fontSize: "18px",
-                textAlign: "center",
-                display: "block",
-              }}
-            >
-              {!collapsed ? "Admin Panel" : "S"}
-            </span>
+            <img
+              src={logo}
+              alt="logo"
+              style={{ width: 45, height: 45, flexShrink: 0, borderRadius: 8 }}
+            />
+            {!collapsed && (
+              <span
+                style={{
+                  marginLeft: 12,
+                  fontWeight: 800,
+                  fontSize: 18,
+                  color: "#1a1a1a",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ខ្មែរឃែស <span style={{ color: "#d4af37" }}>POS</span>
+              </span>
+            )}
           </div>
+
           <Menu
-            defaultSelectedKeys={["/"]}
             mode="inline"
+            openKeys={openKeys}
+            onOpenChange={onOpenChange}
+            selectedKeys={[location.pathname]}
             items={items}
             onClick={(item) => navigate(item.key)}
+            style={{ borderInlineEnd: "none", marginTop: 8 }}
           />
         </Sider>
 
-        <Layout>
+        <Layout
+          style={{ marginLeft: collapsed ? 80 : 280, transition: "all 0.2s" }}
+        >
           <Header
             style={{
               padding: "0 24px",
@@ -202,76 +281,65 @@ const MainLayout = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              boxShadow: "0 1px 4px rgba(0, 21, 41, 0.08)",
-              zIndex: 1,
+              position: "sticky",
+              top: 0,
+              zIndex: 1000,
+              width: "100%",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
             }}
           >
             <Space size={24}>
-              <div
+              <Input
+                placeholder="ស្វែងរកទិន្នន័យ..."
+                prefix={<SearchOutlined style={{ color: "#8c8c8c" }} />}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  cursor: "pointer",
+                  width: 320,
+                  borderRadius: "10px",
+                  background: "#ffffff",
+                  border: "1px solid #d9d9d9",
+                  height: "35px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+                  fontSize: "14px",
                 }}
-                onClick={() => navigate("/")}
-              >
-                <img
-                  src={logo}
-                  alt="logo"
-                  style={{ width: 40, height: 40, objectFit: "contain" }}
-                />
-                <div style={{ marginLeft: 12, lineHeight: 1.2 }}>
-                  <div
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: 16,
-                      color: "#1890ff",
-                    }}
-                  >
-                    UHST
-                  </div>
-                  <div style={{ fontSize: 11, color: "#8c8c8c" }}>
-                    កសាងជំនាញអាយធី
-                  </div>
-                </div>
-              </div>
-              <Input.Search
-                placeholder="ស្វែងរកអ្វីមួយនៅទីនេះ..."
-                allowClear
-                style={{ width: 250 }}
+                className="custom-search-input"
               />
             </Space>
 
-            <Space size={20}>
+            <Space size={16}>
               <Dropdown
                 menu={{ items: notificationItems }}
-                placement="bottomRight"
                 trigger={["click"]}
+                placement="bottomRight"
                 arrow
               >
-                <Badge count={5} size="small" style={{ cursor: "pointer" }}>
+                <Badge count={5} size="small" offset={[-2, 5]}>
                   <div
                     style={{
-                      padding: "8px",
+                      padding: 8,
+                      cursor: "pointer",
                       borderRadius: "50%",
                       background: "#f5f5f5",
                       display: "flex",
-                      alignItems: "center",
                     }}
                   >
-                    <BellOutlined style={{ fontSize: 20, color: "#595959" }} />
+                    <BellOutlined style={{ fontSize: 18, color: "#595959" }} />
                   </div>
                 </Badge>
               </Dropdown>
-              <div style={{ height: 24, width: 1, background: "#f0f0f0" }} />
+
+              <div
+                style={{
+                  height: 20,
+                  width: 1,
+                  background: "#f0f0f0",
+                  margin: "0 8px",
+                }}
+              />
+
               <Dropdown
                 menu={{
                   items: [
-                    {
-                      key: "1",
-                      label: "ព័ត៌មានផ្ទាល់ខ្លួន",
-                      icon: <UserOutlined />,
-                    },
+                    { key: "1", label: "ប្រវត្តិរូប", icon: <UserOutlined /> },
                     { key: "2", label: "ការកំណត់", icon: <SettingOutlined /> },
                     { type: "divider" },
                     {
@@ -284,54 +352,46 @@ const MainLayout = () => {
                 }}
                 placement="bottomRight"
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    gap: 10,
-                  }}
-                >
-                  <div style={{ textAlign: "right", lineHeight: 1.2 }}>
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: 14,
-                        color: "#262626",
-                      }}
-                    >
-                      សាក់ ឧស្សាហ៍
-                    </div>
-                    <div style={{ fontSize: 12, color: "#8c8c8c" }}>
-                      អ្នកគ្រប់គ្រង
-                    </div>
-                  </div>
+                <Space style={{ cursor: "pointer" }}>
                   <Avatar
                     src={profile}
-                    size={40}
+                    size={36}
                     style={{ border: "2px solid #e6f7ff" }}
                   />
-                </div>
+                  {!collapsed && (
+                    <div style={{ lineHeight: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>
+                        សាក់ ឧស្សាហ៍
+                      </div>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        អ្នកគ្រប់គ្រង
+                      </Text>
+                    </div>
+                  )}
+                </Space>
               </Dropdown>
             </Space>
           </Header>
 
-          <Content style={{ margin: "0 16px" }}>
+          <Content style={{ margin: "20px 20px 0" }}>
             <div
               style={{
                 padding: 24,
-                minHeight: 600,
-                marginTop: 10,
+                minHeight: "calc(100vh - 170px)",
                 background: colorBgContainer,
                 borderRadius: borderRadiusLG,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
               }}
             >
               <Outlet />
             </div>
           </Content>
-          <Footer style={{ textAlign: "center" }}>
-            រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ UHST ©{new Date().getFullYear()}{" "}
-            រៀបចំដោយក្រុមការងារ IIT
+
+          <Footer
+            style={{ textAlign: "center", color: "#94a3b8", fontSize: 12 }}
+          >
+            KHMER CASH POS SYSTEM ©{new Date().getFullYear()} -
+            គ្រប់គ្រងអាជីវកម្មបែបឆ្លាតវៃ
           </Footer>
         </Layout>
       </Layout>

@@ -10,13 +10,13 @@ import MainLayoutLogin from "./component/layout/MainLayoutLogin";
 import CustomerPage from "./page/customer/CustomerPage";
 import ProductPage from "./page/product/ProductPage";
 import RolePage from "./page/role/RolePage";
-
+import { ConfigProvider, App as AntdApp } from "antd"; // Import AntdApp
 // Import Ant Design ConfigProvider
-import { ConfigProvider } from "antd";
-
 // Import Font (អ្នកបានដំឡើងរួចហើយ)
 import "@fontsource/kantumruy-pro";
 import "@fontsource/kantumruy-pro/700.css";
+import CategoryPage from "./page/category/CategoryPage";
+import ProvincePage from "./page/province/ProvincePage";
 
 function App() {
   return (
@@ -38,6 +38,8 @@ function App() {
             <Route path="/customer" element={<CustomerPage />} />
             <Route path="/product" element={<ProductPage />} />
             <Route path="/role" element={<RolePage />} />
+            <Route path="/category" element={<CategoryPage />} />
+            <Route path="/province" element={<ProvincePage />} />
             <Route path="*" element={<RouteNoFound />} />
           </Route>
 

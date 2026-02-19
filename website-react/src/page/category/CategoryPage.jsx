@@ -18,6 +18,7 @@ import { request } from "../../util/request";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { RiSave3Fill } from "react-icons/ri";
 import { SearchOutlined } from "@ant-design/icons";
+import { IoMdAddCircle } from "react-icons/io";
 // import dayJs
 
 import { dateClient } from "../../util/helper";
@@ -26,7 +27,7 @@ import { ExclamationCircleFilled } from "@ant-design/icons";
 import { BiSolidEditAlt } from "react-icons/bi";
 import MainPage from "../../component/layout/MainPage";
 
-function RolePage() {
+function CategoryPage() {
   const [formRef] = Form.useForm();
   const [state, setState] = useState({
     list: [],
@@ -48,7 +49,7 @@ function RolePage() {
   // posts Function
   const getlist = async () => {
     setState((pre) => ({ ...pre, loading: true }));
-    // console.log("rolepage : ", res);
+    // console.log("categoriespage : ", res);
     // រៀបចំ Query Params
     let query_param = "?page=1";
     if (filter.text_search !== null && filter.text_search !== "") {
@@ -57,10 +58,10 @@ function RolePage() {
     if (filter.status !== null && filter.status !== "") {
       query_param += "&status=" + filter.status;
     }
-    //localhost:8001/api/role?page1&text_search=admin&status=0 //query parameter
+    //localhost:8001/api/categories?page1&text_search=admin&status=0 //query parameter
     // ទាញទិន្នន័យ (ហៅ request មុននឹងប្រើ res)
-    const res = await request("role" + query_param, "get", {});
-    console.log("rolepage:", res);
+    const res = await request("categories" + query_param, "get", {});
+    console.log("categoriespage:", res);
     if (res && !res.errors) {
       setState((pre) => ({
         ...pre,
@@ -89,16 +90,17 @@ function RolePage() {
     setValidate({});
   };
 
-  // onFinish function new role form
+  // onFinish function new categories form
   const onFinish = async (item) => {
     let data = {
       name: item.name,
       code: item.code,
       description: item.description,
       status: item.status,
+      parent_id: item.parent_id,
     };
 
-    let url = "role";
+    let url = "categories";
     let method = "post";
 
     if (formRef.getFieldValue("id") != undefined) {
@@ -121,7 +123,7 @@ function RolePage() {
     }
   };
 
-  // handle Delete role
+  // handle Delete categories
   const handleDelete = async (data) => {
     Modal.confirm({
       title: "បញ្ជាក់ការលុប",
@@ -136,7 +138,7 @@ function RolePage() {
       okButtonProps: { style: { borderRadius: "10px" } },
       cancelButtonProps: { style: { borderRadius: "10px" } },
       onOk: async () => {
-        const res = await request(`role/${data.id}`, "delete", {});
+        const res = await request(`categories/${data.id}`, "delete", {});
         if (res && !res.error) {
           message.success(res.message || "លុបបានជោគជ័យ!");
           getlist();
@@ -147,7 +149,7 @@ function RolePage() {
     });
   };
 
-  //handle Edit role
+  //handle Edit categories
   const handleEdit = async (data) => {
     formRef.setFieldsValue({
       ...data,
@@ -203,16 +205,19 @@ function RolePage() {
           <Button
             type="primary"
             onClick={handleOpenModal}
-            icon={<AiOutlineUserAdd />}
+            icon={<IoMdAddCircle style={{ fontSize: "18px" }} />} // ប្រើ Icon ថ្មី
+            style={{
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+            }}
           >
             បង្កើតថ្មី
           </Button>
         </div>
         {/* Modal Form Create update */}
         <Modal
-          title={
-            formRef.getFieldValue("id") ? "កែប្រែតួនាទី" : "បង្កើតតួនាទីថ្មី"
-          }
+          title={formRef.getFieldValue("id") ? "កែប្រែប្រភេទ" : "បង្កើតប្រភេទ"}
           open={state.open}
           onCancel={handleCloseModal}
           centered
@@ -221,20 +226,20 @@ function RolePage() {
         >
           <Form layout="vertical" onFinish={onFinish} form={formRef}>
             <Form.Item
-              label="ឈ្មោះតួនាទី"
+              label="ឈ្មោះប្រភេទ"
               name={"name"}
               {...validate.name}
-              rules={[{ required: true, message: "សូមបញ្ចូលឈ្មោះតួនាទី!" }]}
+              rules={[{ required: true, message: "សូមបញ្ចូលឈ្មោះប្រភេទ!" }]}
             >
-              <Input placeholder="បញ្ចូលឈ្មោះតួនាទី" />
+              <Input placeholder="បញ្ចូលឈ្មោះប្រភេទ" />
             </Form.Item>
             <Form.Item
-              label="កូដ"
-              name={"code"}
-              {...validate.code}
-              rules={[{ required: true, message: "សូមបញ្ចូលកូដ!" }]}
+              label="លេខសម្គាល់មេ"
+              name={"parent_id"}
+              {...validate.parent_id}
+              rules={[{ required: true, message: "សូមបញ្ចូលលេខសម្គាល់មេ!" }]}
             >
-              <Input placeholder="បញ្ចូលកូដតួនាទី" />
+              <Input placeholder="បញ្ចូលលេខសម្គាល់មេ" />
             </Form.Item>
             <Form.Item label="ការពិពណ៌នា" name={"description"}>
               <Input.TextArea placeholder="ព័ត៌មានបន្ថែម..." />
@@ -283,14 +288,14 @@ function RolePage() {
               dataIndex: "name",
             },
             {
-              key: "code",
-              title: "កូដ",
-              dataIndex: "code",
-            },
-            {
               key: "description",
               title: "ការពិពណ៌នា",
               dataIndex: "description",
+            },
+            {
+              key: "parent_id",
+              title: "លេខសម្គាល់មេ",
+              dataIndex: "parent_id",
             },
             {
               key: "status",
@@ -335,4 +340,4 @@ function RolePage() {
     </MainPage>
   );
 }
-export default RolePage;
+export default CategoryPage;

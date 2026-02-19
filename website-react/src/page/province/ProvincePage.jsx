@@ -5,6 +5,7 @@ import {
   Input,
   message,
   Modal,
+  notification,
   Select,
   Space,
   Table,
@@ -19,14 +20,15 @@ import { AiOutlineUserAdd } from "react-icons/ai";
 import { RiSave3Fill } from "react-icons/ri";
 import { SearchOutlined } from "@ant-design/icons";
 // import dayJs
-
+// iocn reactJs
 import { dateClient } from "../../util/helper";
 import { MdDelete } from "react-icons/md";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import { BiSolidEditAlt } from "react-icons/bi";
 import MainPage from "../../component/layout/MainPage";
+import { IoMdAddCircle } from "react-icons/io";
 
-function RolePage() {
+function ProvincePage() {
   const [formRef] = Form.useForm();
   const [state, setState] = useState({
     list: [],
@@ -34,6 +36,11 @@ function RolePage() {
     loading: false,
     open: false,
     validate: {},
+  });
+  // កំណត់ឱ្យសារបង្ហាញនៅខាងស្តាំដៃផ្នែកខាងលើ
+  message.config({
+    placement: "topRight",
+    duration: 3,
   });
   // ការចាប់តម្លៃទុកក្នុង State ដើម្បីអោយ User វាយអក្សរ ឬរើសស្ថានភាព (Status)
   const [filter, setFilter] = useState({
@@ -48,19 +55,19 @@ function RolePage() {
   // posts Function
   const getlist = async () => {
     setState((pre) => ({ ...pre, loading: true }));
-    // console.log("rolepage : ", res);
+    // console.log("provincepage : ", res);
     // រៀបចំ Query Params
     let query_param = "?page=1";
-    if (filter.text_search !== null && filter.text_search !== "") {
+    if (filter.text_search != null && filter.text_search != "") {
       query_param += "&text_search=" + filter.text_search;
     }
-    if (filter.status !== null && filter.status !== "") {
+    if (filter.status != null && filter.status != "") {
       query_param += "&status=" + filter.status;
     }
-    //localhost:8001/api/role?page1&text_search=admin&status=0 //query parameter
+    //localhost:8001/api/province?page1&text_search=admin&status=0 //query parameter
     // ទាញទិន្នន័យ (ហៅ request មុននឹងប្រើ res)
-    const res = await request("role" + query_param, "get", {});
-    console.log("rolepage:", res);
+    const res = await request("province" + query_param, "get", {});
+    console.log("provincepage:", res);
     if (res && !res.errors) {
       setState((pre) => ({
         ...pre,
@@ -79,6 +86,7 @@ function RolePage() {
 
   // handle Open Modal
   const handleOpenModal = () => {
+    formRef.setFieldValue("status", 1);
     setState((pre) => ({ ...pre, open: true }));
   };
 
@@ -89,16 +97,17 @@ function RolePage() {
     setValidate({});
   };
 
-  // onFinish function new role form
+  // onFinish function new province form
   const onFinish = async (item) => {
     let data = {
       name: item.name,
       code: item.code,
       description: item.description,
       status: item.status,
+      distand_from_city: item.distand_from_city,
     };
 
-    let url = "role";
+    let url = "province";
     let method = "post";
 
     if (formRef.getFieldValue("id") != undefined) {
@@ -108,7 +117,12 @@ function RolePage() {
 
     const res = await request(url, method, data);
     if (res && !res.errors) {
-      message.success(res.message || "ជោគជ័យ!");
+      // ប្តូរពី message.success មក notification.success
+      notification.success({
+        message: 'ជោគជ័យ',
+        description: res.message,
+        placement: 'topRight', // កំណត់ឱ្យនៅខាងស្តាំដៃ
+      });
       handleCloseModal();
       getlist();
     } else {
@@ -117,11 +131,16 @@ function RolePage() {
         loading: false,
       }));
       setValidate(res.errors);
-      message.error(res?.message || "ប្រតិបត្តិការបរាជ័យ!");
+      // ប្តូរពី message.error មក notification.error
+      notification.error({
+        message: 'ប្រតិបត្តិការបរាជ័យ',
+        description: res?.message,
+        placement: 'topRight',
+      });
     }
-  };
+  }
 
-  // handle Delete role
+  // handle Delete province
   const handleDelete = async (data) => {
     Modal.confirm({
       title: "បញ្ជាក់ការលុប",
@@ -136,7 +155,7 @@ function RolePage() {
       okButtonProps: { style: { borderRadius: "10px" } },
       cancelButtonProps: { style: { borderRadius: "10px" } },
       onOk: async () => {
-        const res = await request(`role/${data.id}`, "delete", {});
+        const res = await request(`province/${data.id}`, "delete", {});
         if (res && !res.error) {
           message.success(res.message || "លុបបានជោគជ័យ!");
           getlist();
@@ -147,7 +166,7 @@ function RolePage() {
     });
   };
 
-  //handle Edit role
+  //handle Edit province
   const handleEdit = async (data) => {
     formRef.setFieldsValue({
       ...data,
@@ -203,7 +222,12 @@ function RolePage() {
           <Button
             type="primary"
             onClick={handleOpenModal}
-            icon={<AiOutlineUserAdd />}
+            icon={<IoMdAddCircle style={{ fontSize: "18px" }} />} // ប្រើ Icon ថ្មី
+            style={{
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+            }}
           >
             បង្កើតថ្មី
           </Button>
@@ -211,7 +235,9 @@ function RolePage() {
         {/* Modal Form Create update */}
         <Modal
           title={
-            formRef.getFieldValue("id") ? "កែប្រែតួនាទី" : "បង្កើតតួនាទីថ្មី"
+            formRef.getFieldValue("id")
+              ? "កែប្រែខេត្ត/ក្រុង"
+              : "បង្កើតខេត្ត/ក្រុង"
           }
           open={state.open}
           onCancel={handleCloseModal}
@@ -221,12 +247,14 @@ function RolePage() {
         >
           <Form layout="vertical" onFinish={onFinish} form={formRef}>
             <Form.Item
-              label="ឈ្មោះតួនាទី"
+              label="ឈ្មោះខេត្ត/ក្រុង"
               name={"name"}
               {...validate.name}
-              rules={[{ required: true, message: "សូមបញ្ចូលឈ្មោះតួនាទី!" }]}
+              rules={[
+                { required: true, message: "សូមបញ្ចូលឈ្មោះខេត្ត/ក្រុង!" },
+              ]}
             >
-              <Input placeholder="បញ្ចូលឈ្មោះតួនាទី" />
+              <Input placeholder="សូមបញ្ចូលឈ្មោះខេត្ត/ក្រុង" />
             </Form.Item>
             <Form.Item
               label="កូដ"
@@ -236,8 +264,26 @@ function RolePage() {
             >
               <Input placeholder="បញ្ចូលកូដតួនាទី" />
             </Form.Item>
-            <Form.Item label="ការពិពណ៌នា" name={"description"}>
-              <Input.TextArea placeholder="ព័ត៌មានបន្ថែម..." />
+            <Form.Item
+              label="ចម្ងាយពីកណ្តាលក្រុង(គីឡូម៉ែត្រ)"
+              name={"distand_from_city"}
+              {...validate.distand_from_city}
+              rules={[
+                {
+                  required: true,
+                  message: "មបញ្ចូលចម្ងាយពីកណ្តាលក្រុង(គីឡូម៉ែត្រ)!",
+                },
+              ]}
+            >
+              <Input placeholder="សូមបញ្ចូលចម្ងាយពីកណ្តាលក្រុង(គីឡូម៉ែត្រ)!" />
+            </Form.Item>
+            <Form.Item label="ការពិពណ៌នា" name="description">
+              <Input.TextArea
+                placeholder="ព័ត៌មានបន្ថែមអំពីតំបន់ប្រវត្តិសាស្ត្រ និងកសិឧស្សាហកម្ម..."
+                autoSize={{ minRows: 4, maxRows: 10 }} // កំណត់ឱ្យមានយ៉ាងតិច 4 ជួរ
+                showCount // បង្ហាញចំនួនតួអក្សរ (មើលទៅអាជីពជាង)
+                maxLength={1000}
+              />
             </Form.Item>
             <Form.Item label="ស្ថានភាព" name={"status"}>
               <Select
@@ -251,6 +297,7 @@ function RolePage() {
             <Form.Item style={{ textAlign: "right", marginBottom: 0 }}>
               <Space>
                 <Button onClick={handleCloseModal}>បោះបង់</Button>
+
                 <Button
                   type="primary"
                   htmlType="submit"
@@ -291,6 +338,26 @@ function RolePage() {
               key: "description",
               title: "ការពិពណ៌នា",
               dataIndex: "description",
+              width: 500,
+              render: (text) => (
+                <div
+                  style={{
+                    whiteSpace: "pre-line",
+                    wordBreak: "break-word",
+                    textAlign: "left",
+                    fontSize: "13px",
+                    color: "#555",
+                  }}
+                >
+                  {text}
+                </div>
+              ),
+            },
+            {
+              key: "distand_from_city",
+              title: "ចម្ងាយពីកណ្តាលក្រុង",
+              dataIndex: "distand_from_city",
+              render: (value) => value + "គីឡូម៉ែត្រ",
             },
             {
               key: "status",
@@ -335,4 +402,4 @@ function RolePage() {
     </MainPage>
   );
 }
-export default RolePage;
+export default ProvincePage;

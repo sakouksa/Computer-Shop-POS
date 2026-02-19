@@ -1,6 +1,5 @@
 import axios from "axios";
 import config from "./config";
-
 // បង្កើត Object សម្រាប់បកប្រែឈ្មោះ field ទៅជាភាសាខ្មែរ
 const khmerErrorMessages = {
   name: "សូមបញ្ចូលឈ្មោះតួនាទី!",
@@ -23,25 +22,32 @@ export const request = (url = "", method = "", data = {}) => {
     .then((res) => {
       return res.data;
     })
-    .catch((err) => {
-      console.log(err);
-      const response = err.response;
+    .catch((error) => {
+      console.log(error);
+      const response = error.response;
       if (response) {
         const status = response.status;
         const data = response.data;
-        let errors = {};
-        Object.keys(data.errors).map((key) => {
-          errors[key] = {
-            validateStatus: "error",
-            help: khmerErrorMessages[key] || data.errors[key][0], //get error message
-            hasFeedback: true,
-          };
-        });
+        let errors = {
+          message:data?.message,
+        };
+        if (status == 500) {
+          errors.message = "មានបញ្ហាបច្ចេកទេសក្នុងប្រព័ន្ធ សូមព្យាយាមម្តងទៀត!";
+        }
+
+        if (data.errors) {
+           Object.keys(data.errors).map((key) => {
+             errors[key] = {
+               validateStatus: "error",
+               help: khmerErrorMessages[key] || data.errors[key][0], //get error message
+               hasFeedback: true,
+             };
+           });
+        }
         return {
-          status,
+          status:status,
           errors: errors,
         };
       }
-      return null;
     });
 };
