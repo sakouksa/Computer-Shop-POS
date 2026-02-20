@@ -1,10 +1,8 @@
 import React from "react";
 import { Button, Result } from "antd";
-import { useNavigate } from "react-router-dom";
 import { HomeOutlined } from "@ant-design/icons";
 
 const RouteNoFound = () => {
-  const navigate = useNavigate();
 
   return (
     <div
@@ -29,7 +27,7 @@ const RouteNoFound = () => {
               textShadow: "2px 2px 4px rgba(0,0,0,0.1)",
             }}
           >
-            ៤០៤
+            444
           </span>
         }
         subTitle={
@@ -45,24 +43,6 @@ const RouteNoFound = () => {
               ឬអាសយដ្ឋាន URL មិនត្រឹមត្រូវ។
             </p>
           </div>
-        }
-        // បន្ថែមប៊ូតុងចុចត្រឡប់ទៅទំព័រដើមនៅទីនេះ
-        extra={
-          <Button
-            type="primary"
-            icon={<HomeOutlined />}
-            onClick={() => navigate("/")}
-            style={{
-              background: "#332f2e", // ពណ៌ដូច Sidebar Item
-              borderColor: "#332f2e",
-              borderRadius: "8px",
-              height: "40px",
-              padding: "0 24px",
-              fontWeight: "600",
-            }}
-          >
-            ត្រឡប់ទៅកាន់ទំព័រដើម
-          </Button>
         }
       />
     </div>

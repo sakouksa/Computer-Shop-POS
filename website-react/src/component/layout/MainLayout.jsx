@@ -41,7 +41,7 @@ import { CiCloudOn } from "react-icons/ci";
 
 // Assets
 import logo from "../../assets/img/pos.jpg";
-import profile from "../../assets/image/profile.jpg";
+import { profileStore } from "../../store/profileStore";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Text } = Typography;
@@ -121,12 +121,21 @@ const items = [
 ];
 
 const MainLayout = () => {
+  const { profile, logout } = profileStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!profile) {
+      navigate("/login");
+    }
+  }, []);
+
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
   const [openKeys, setOpenKeys] = useState([]);
 
+  // Function សម្រាប់គ្រប់គ្រងការបើក/បិទ Submenu ឱ្យបង្ហាញតែមួយក្នុងពេលតែមួយ
   const onOpenChange = (keys) => {
     const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
     const rootSubmenuKeys = [
@@ -156,6 +165,9 @@ const MainLayout = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  if (!profile) {
+    return null;
+  }
 
   const notificationItems = [
     {
@@ -191,6 +203,53 @@ const MainLayout = () => {
           </div>
         </Space>
       ),
+    },
+  ];
+  //Profile
+  const items_drop_image = [
+    {
+      type: "group",
+      label: (
+        <div style={{ padding: "4px 4px", cursor: "default" }}>
+          <div
+            style={{
+              fontWeight: 600,
+              fontSize: 14,
+              color: "#111827",
+              lineHeight: "1.5",
+            }}
+          >
+            {profile?.name}
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              color: "#6b7280",
+              fontWeight: 400,
+            }}
+          >
+            {profile?.role}
+          </div>
+        </div>
+      ),
+    },
+    { type: "divider" },
+    {
+      key: "1",
+      label: "ប្រវត្តិរូប",
+      icon: <UserOutlined />,
+    },
+    {
+      key: "2",
+      label: "ការកំណត់",
+      icon: <SettingOutlined />,
+    },
+    { type: "divider" },
+    {
+      key: "logout",
+      label: "ចាកចេញ",
+      icon: <LogoutOutlined />,
+      danger: true,
     },
   ];
 
@@ -243,7 +302,7 @@ const MainLayout = () => {
             <img
               src={logo}
               alt="logo"
-              style={{ width: 45, height: 45, flexShrink: 0, borderRadius: 8 }}
+              style={{ width: 36, height: 36, flexShrink: 0, borderRadius: 8 }}
             />
             {!collapsed && (
               <span
@@ -255,7 +314,7 @@ const MainLayout = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                ខ្មែរឃែស <span style={{ color: "#d4af37" }}>POS</span>
+                ខេ-ឃែសកុំព្យូទ័រ <span style={{ color: "#d4af37" }}>POS</span>
               </span>
             )}
           </div>
@@ -306,12 +365,7 @@ const MainLayout = () => {
             </Space>
 
             <Space size={16}>
-              <Dropdown
-                menu={{ items: notificationItems }}
-                trigger={["click"]}
-                placement="bottomRight"
-                arrow
-              >
+              <Dropdown menu={{ items: notificationItems }} trigger={["click"]}>
                 <Badge count={5} size="small" offset={[-2, 5]}>
                   <div
                     style={{
@@ -336,35 +390,49 @@ const MainLayout = () => {
                 }}
               />
 
+              {/* Profile */}
               <Dropdown
                 menu={{
-                  items: [
-                    { key: "1", label: "ប្រវត្តិរូប", icon: <UserOutlined /> },
-                    { key: "2", label: "ការកំណត់", icon: <SettingOutlined /> },
-                    { type: "divider" },
-                    {
-                      key: "3",
-                      label: "ចាកចេញ",
-                      icon: <LogoutOutlined />,
-                      danger: true,
-                    },
-                  ],
+                  items: items_drop_image,
+                  onClick: (item) => {
+                    if (item.key === "logout") {
+                      navigate("login");
+                      logout();
+                    }
+                  },
                 }}
                 placement="bottomRight"
               >
-                <Space style={{ cursor: "pointer" }}>
+                <Space
+                  style={{
+                    cursor: "pointer",
+                    padding: "4px 8px",
+                    borderRadius: 8,
+                  }}
+                  className="user-dropdown-link"
+                >
                   <Avatar
-                    src={profile}
-                    size={36}
-                    style={{ border: "2px solid #e6f7ff" }}
+                    src={profile?.image}
+                    size={40}
+                    style={{
+                      border: "2px solid #e6f7ff",
+                      backgroundColor: "#87d068",
+                    }}
+                    icon={<UserOutlined />}
                   />
                   {!collapsed && (
-                    <div style={{ lineHeight: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>
-                        សាក់ ឧស្សាហ៍
+                    <div style={{ lineHeight: 1.2 }}>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 13,
+                          color: "#1f1f1f",
+                        }}
+                      >
+                        {profile?.name}
                       </div>
                       <Text type="secondary" style={{ fontSize: 11 }}>
-                        អ្នកគ្រប់គ្រង
+                        {profile?.role}
                       </Text>
                     </div>
                   )}
