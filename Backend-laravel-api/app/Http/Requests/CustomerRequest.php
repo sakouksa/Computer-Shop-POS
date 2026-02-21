@@ -30,6 +30,7 @@ class CustomerRequest extends FormRequest
             'email' => 'required|email|unique:customers,email,'.$id,
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
+            'status' => 'required|boolean',
         ];
     }
 }

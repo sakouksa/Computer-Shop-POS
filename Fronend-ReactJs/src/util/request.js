@@ -35,7 +35,7 @@ export const request = (url = "", method = "", data = {}) => {
           errors.message = "មានបញ្ហាបច្ចេកទេសក្នុងប្រព័ន្ធ សូមព្យាយាមម្តងទៀត!";
         }
 
-        if (data.errors) {
+        if (data.errors) {``
            Object.keys(data.errors).map((key) => {
              errors[key] = {
                validateStatus: "error",

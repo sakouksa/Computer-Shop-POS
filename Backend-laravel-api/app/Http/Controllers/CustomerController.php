@@ -11,9 +11,17 @@ class CustomerController extends Controller
     /**
      * Get all customers ordered by latest ID
      */
-    public function index()
+    public function index(Request $req)
     {
-        $list = Customer::orderBy('id', 'desc')->get();
+        $customer = Customer::query(); //ORM eloquent
+        if ($req->has("text_search")) {
+            // $role->where("name", "=", $req->input("text_search")); // ទាល់តែដូចគ្នាបាន search filter ចេញ
+            $customer->where("name", "LIKE", "%" . $req->input("text_search") . "%"); //Function នេះ ស្រដៀងក៌វា search filter ចេញដែលគេប្រើ "LIKE"
+        };
+        if ($req->has("status")) {
+            $customer->where("status", "=", $req->input("status"));
+        }
+        $list = $customer->orderBy('id', 'desc')->get();
         return response()->json([
             'list' => $list,
         ]);
