@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProvinceController;
@@ -25,3 +26,7 @@ Route::apiResource('province', ProvinceController::class);
 Route::apiResource('customer', CustomerController::class);
 // About Routes
 Route::apiResource('about', AboutController::class);
+
+//Auth
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);

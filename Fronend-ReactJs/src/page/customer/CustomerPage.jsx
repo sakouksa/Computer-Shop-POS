@@ -312,9 +312,15 @@ function customerPage() {
               dataIndex: "address",
             },
             {
-              key: status,
+              key: "status",
               title: "ស្ថានភាព",
               dataIndex: "status",
+              render: (value) =>
+                value == 1 ? (
+                  <Tag color="green">សកម្ម</Tag>
+                ) : (
+                  <Tag color="red">អសកម្ម</Tag>
+                ),
             },
             {
               key: "created_at",

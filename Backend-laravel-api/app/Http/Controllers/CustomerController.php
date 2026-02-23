@@ -18,8 +18,8 @@ class CustomerController extends Controller
             // $role->where("name", "=", $req->input("text_search")); // ទាល់តែដូចគ្នាបាន search filter ចេញ
             $customer->where("name", "LIKE", "%" . $req->input("text_search") . "%"); //Function នេះ ស្រដៀងក៌វា search filter ចេញដែលគេប្រើ "LIKE"
         };
-        if ($req->has("status")) {
-            $customer->where("status", "=", $req->input("status"));
+        if ($req->input("status") !== null && $req->input("status") !== "") {
+            $customer->where("status", $req->input("status"));
         }
         $list = $customer->orderBy('id', 'desc')->get();
         return response()->json([
