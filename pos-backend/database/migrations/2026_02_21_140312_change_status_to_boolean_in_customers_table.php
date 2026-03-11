@@ -11,8 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // ១. ឆែកមើលថាមាន Column status ឬអត់ បើមានត្រូវលុបវាចោលសិន
+        if (Schema::hasColumn('customers', 'status')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->dropColumn('status');
+            });
+        }
+
+        // ២. បង្កើត Column status ថ្មីជាប្រភេទ boolean
         Schema::table('customers', function (Blueprint $table) {
-            $table->boolean('status')->default(1)->change();
+            $table->boolean('status')->default(1)->after('address');
         });
     }
 
@@ -22,7 +30,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->string('status')->nullable()->change();
+            $table->dropColumn('status');
+        });
+
+        Schema::table('customers', function (Blueprint $table) {
+            $table->string('status')->nullable()->after('address');
         });
     }
 };

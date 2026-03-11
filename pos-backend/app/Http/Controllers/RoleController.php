@@ -33,7 +33,7 @@ class RoleController extends Controller
         return response()->json([
             'data' => $role,
             'message' => 'បានបង្កើតតួនាទីថ្មីដោយជោគជ័យ',
-        ]);
+        ],200);
     }
 
     // Display the specified resource.

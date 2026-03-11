@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProvinceController;
@@ -30,6 +31,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('province', ProvinceController::class)->withoutMiddleware('auth:api');
     Route::apiResource('customer', CustomerController::class);
+    Route::apiResource('brand', BrandController::class);
     Route::apiResource('about', AboutController::class);
 
     // ចេញពីប្រព័ន្ធ
