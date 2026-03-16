@@ -49,7 +49,7 @@ export const request = (url = "", method = "", data = {}) => {
       // ករណីគ្មាន Internet ឬ Server បិទ
       return { 
         error: true,
-        errors: { message: "មិនអាចតភ្ជាប់ទៅកាន់ Server បានទេ!" } 
+        errors: { message: "501 : មិនអាចតភ្ជាប់ទៅកាន់ Server បានទេ!" }
       };
     });
 };

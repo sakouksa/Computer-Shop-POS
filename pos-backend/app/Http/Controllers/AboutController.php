@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AboutRequest;
 use App\Models\About;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
 class AboutController extends Controller
 {
@@ -30,6 +29,7 @@ class AboutController extends Controller
             ], 500);
         }
         return response()->json([
+            
             'data' => $data,
             'message' => 'Insert About Successfully',
         ]);

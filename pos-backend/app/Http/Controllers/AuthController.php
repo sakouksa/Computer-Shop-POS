@@ -18,16 +18,32 @@ class AuthController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
+            'phone' => 'nullable',
+            'address' => 'nullable',
+            'type' => 'nullable',
+            'image' => 'nullable|image|mimes:jpeg,png,gif|max:2048',
         ]);
-
+        //create the user
         $user = User::create([
             'name' => $request->name, //body json client $request->name | $request->input('name')
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        //Handle the image upload if exist
+        $imagePath = null;
+        if($request->hasFile('image')){
+            $imagePath = $request->file('image')->store('profile', 'public');
+        }
+        //create the profile
+        $user->profile()->create([
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'image' => $imagePath,
+            'type' => $request->type,
+        ]);
 
         return response()->json([
-            'user' => $user,
+            'user' => $user->load('profile'),
             'message' => 'ការចុះឈ្មោះអ្នកប្រើប្រាស់បានជោគជ័យ',
         ], 201);
     }
@@ -46,7 +62,7 @@ class AuthController extends Controller
 
         return response()->json([
             'access_token' => $token,
-            'user' => JWTAuth::user(),
+            'user' => JWTAuth::user()->load('profile'),
         ]);
     }
 }
