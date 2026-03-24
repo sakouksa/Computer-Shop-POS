@@ -11,6 +11,7 @@ import {
   Dropdown,
   ConfigProvider,
   Typography,
+  Button,
 } from "antd";
 
 // --- Import Icons ---
@@ -22,6 +23,8 @@ import {
   SafetyCertificateOutlined,
   SearchOutlined,
   FileTextOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 
 import {
@@ -31,6 +34,7 @@ import {
   MdOutlinePayments,
   MdOutlineLanguage,
   MdOutlineLocationCity,
+  MdOutlineBrandingWatermark,
 } from "react-icons/md";
 
 import { RiCustomerService2Fill, RiUserSharedLine } from "react-icons/ri";
@@ -42,6 +46,7 @@ import { CiCloudOn } from "react-icons/ci";
 // Assets
 import logo from "../../assets/img/pos.jpg";
 import { profileStore } from "../../store/profileStore";
+import config from "../../util/config";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Text } = Typography;
@@ -56,7 +61,6 @@ const items = [
     getItem("ផ្ទាំងលក់ POS", "/pos", <MdPointOfSale />),
     getItem("បញ្ជីលក់/វិក្កយបត្រ", "/orders", <AiOutlineShoppingCart />),
   ]),
-
   getItem(
     "របាយការណ៍",
     "report",
@@ -68,22 +72,19 @@ const items = [
       getItem("របាយការណ៍ចំណាយ", "/report/expense", <MdOutlinePayments />),
     ],
   ),
-
   getItem("អតិថិជន", "customer", <RiCustomerService2Fill />, [
     getItem("បញ្ជីអតិថិជន", "/customer", <AiOutlineUsergroupAdd />),
     getItem("ប្រភេទអតិថិជន", "/customer_type", <BiCategoryAlt />),
   ]),
-
   getItem("សារពើភ័ណ្ឌ", "inventory", <MdProductionQuantityLimits />, [
     getItem("បញ្ជីផលិតផល", "/product", <MdProductionQuantityLimits />),
     getItem("ប្រភេទផលិតផល", "/category", <BiCategoryAlt />),
+    getItem("ម៉ាកផលិតផល", "/brand", <MdOutlineBrandingWatermark />),
   ]),
-
   getItem("ការទិញចូល", "purchase", <CiCloudOn />, [
     getItem("បញ្ជីទិញចូល", "/purchase", <AiOutlineShoppingCart />),
     getItem("អ្នកផ្គត់ផ្គង់", "/supplier", <RiUserSharedLine />),
   ]),
-
   getItem("ចំណាយផ្សេងៗ", "expense", <BsCashStack />, [
     getItem("បញ្ជីចំណាយ", "/expense", <MdOutlinePayments />),
     getItem(
@@ -92,7 +93,6 @@ const items = [
       <BiCategoryAlt style={{ color: "#d4af37" }} />,
     ),
   ]),
-
   getItem("បុគ្គលិក", "employee", <AiOutlineUsergroupAdd />, [
     getItem("បញ្ជីបុគ្គលិក", "/employee", <UserOutlined />),
     getItem(
@@ -101,13 +101,11 @@ const items = [
       <BsCashStack style={{ color: "#d4af37" }} />,
     ),
   ]),
-
   getItem("អ្នកប្រើប្រាស់", "user", <UserOutlined />, [
     getItem("បញ្ជីអ្នកប្រើប្រាស់", "/list", <UserOutlined />),
     getItem("កំណត់តួនាទី", "/role", <BiSolidUserBadge />),
     getItem("សិទ្ធិប្រើប្រាស់", "/permission", <SafetyCertificateOutlined />),
   ]),
-
   getItem("ការកំណត់", "settings", <SettingOutlined />, [
     getItem("ភាសា", "/lang", <MdOutlineLanguage />),
     getItem("ខេត្ត/ក្រុង", "/province", <MdOutlineLocationCity />),
@@ -122,22 +120,24 @@ const items = [
 
 const MainLayout = () => {
   const { profile, logout } = profileStore();
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+  const [openKeys, setOpenKeys] = useState([]);
+
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
 
   useEffect(() => {
     if (!profile) {
       navigate("/login");
     }
-  }, []);
+  }, [profile, navigate]);
 
-  const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
-
-  const [openKeys, setOpenKeys] = useState([]);
-
-  // Function សម្រាប់គ្រប់គ្រងការបើក/បិទ Submenu ឱ្យបង្ហាញតែមួយក្នុងពេលតែមួយ
   const onOpenChange = (keys) => {
-    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
+    // បញ្ជី Key របស់ Menu ធំៗ (Root Submenu)
     const rootSubmenuKeys = [
       "sales",
       "report",
@@ -149,8 +149,11 @@ const MainLayout = () => {
       "user",
       "settings",
     ];
+    // ស្វែងរក Key ចុងក្រោយដែលអ្នកទើបតែចុចបើក
+    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
 
-    if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+    // ប្រសិនបើចុចលើ Menu ដែលមិនមែនជា Root (ចុចលើ Item កូនៗខាងក្នុង)
+    if (latestOpenKey && rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
       setOpenKeys(keys);
     } else {
       setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
@@ -162,13 +165,9 @@ const MainLayout = () => {
     if (path) setOpenKeys([path]);
   }, [location.pathname]);
 
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-  if (!profile) {
-    return null;
-  }
+  if (!profile) return null;
 
+  // Dropdown Items (Notifications & Profile) - ទុកកូដដដែលរបស់អ្នក
   const notificationItems = [
     {
       key: "header",
@@ -205,7 +204,6 @@ const MainLayout = () => {
       ),
     },
   ];
-  //Profile
   const items_drop_image = [
     {
       type: "group",
@@ -221,36 +219,17 @@ const MainLayout = () => {
           >
             {profile?.name}
           </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: "#6b7280",
-              fontWeight: 400,
-            }}
-          >
+          <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>
             {profile?.role}
           </div>
         </div>
       ),
     },
     { type: "divider" },
-    {
-      key: "1",
-      label: "ប្រវត្តិរូប",
-      icon: <UserOutlined />,
-    },
-    {
-      key: "2",
-      label: "ការកំណត់",
-      icon: <SettingOutlined />,
-    },
+    { key: "1", label: "ប្រវត្តិរូប", icon: <UserOutlined /> },
+    { key: "2", label: "ការកំណត់", icon: <SettingOutlined /> },
     { type: "divider" },
-    {
-      key: "logout",
-      label: "ចាកចេញ",
-      icon: <LogoutOutlined />,
-      danger: true,
-    },
+    { key: "logout", label: "ចាកចេញ", icon: <LogoutOutlined />, danger: true },
   ];
 
   return (
@@ -270,12 +249,16 @@ const MainLayout = () => {
       }}
     >
       <Layout style={{ minHeight: "100vh" }}>
+        {/* --- Sidebar (Sider) --- */}
         <Sider
           collapsible
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
+          breakpoint="lg"
+          collapsedWidth={80}
           width={280}
           theme="light"
+          trigger={null}
           style={{
             overflow: "auto",
             height: "100vh",
@@ -314,7 +297,7 @@ const MainLayout = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                ខេ-ឃែសកុំព្យូទ័រ <span style={{ color: "#d4af37" }}>POS</span>
+                ខេ-ឃែស <span style={{ color: "#d4af37" }}>POS</span>
               </span>
             )}
           </div>
@@ -330,6 +313,7 @@ const MainLayout = () => {
           />
         </Sider>
 
+        {/* --- Main Layout Content --- */}
         <Layout
           style={{ marginLeft: collapsed ? 80 : 280, transition: "all 0.2s" }}
         >
@@ -347,20 +331,36 @@ const MainLayout = () => {
               boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
             }}
           >
-            <Space size={24}>
+            <Space size={16}>
+              {/* --- Toggle Button --- */}
+              <Button
+                type="text"
+                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+                style={{
+                  fontSize: "18px",
+                  width: 40,
+                  height: 40,
+                  borderRadius: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#f5f5f5",
+                }}
+              />
+
               <Input
                 placeholder="ស្វែងរកទិន្នន័យ..."
                 prefix={<SearchOutlined style={{ color: "#8c8c8c" }} />}
                 style={{
-                  width: 320,
+                  width: "100%",
+                  maxWidth: 320,
                   borderRadius: "10px",
                   background: "#ffffff",
                   border: "1px solid #d9d9d9",
                   height: "35px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
                   fontSize: "14px",
                 }}
-                className="custom-search-input"
               />
             </Space>
 
@@ -390,7 +390,6 @@ const MainLayout = () => {
                 }}
               />
 
-              {/* Profile */}
               <Dropdown
                 menu={{
                   items: items_drop_image,
@@ -409,17 +408,44 @@ const MainLayout = () => {
                     padding: "4px 8px",
                     borderRadius: 8,
                   }}
-                  className="user-dropdown-link"
                 >
-                  <Avatar
-                    src={profile?.image}
-                    size={40}
-                    style={{
-                      border: "2px solid #e6f7ff",
-                      backgroundColor: "#87d068",
-                    }}
-                    icon={<UserOutlined />}
-                  />
+                  <Space
+                    size={12}
+                    style={{ cursor: "pointer", padding: "4px 8px" }}
+                  >
+                    {/* --- image Avatar --- */}
+                    <Avatar
+                      src={config.image_path + profile?.profile?.image}
+                      size={40}
+                      style={{
+                        border: "2px solid #e6f7ff",
+                        backgroundColor: "#87d068",
+                      }}
+                      icon={<UserOutlined />}
+                    />
+                    {/* --- role --- */}
+                    {!collapsed && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          lineHeight: "1.2",
+                        }}
+                      >
+                        <Text
+                          strong
+                          style={{ fontSize: "14px", color: "#1f1f1f" }}
+                        >
+                          {profile?.name} {/* បង្ហាញឈ្មោះអ្នកប្រើប្រាស់ */}
+                        </Text>
+                        <Text type="secondary" style={{ fontSize: "12px" }}>
+                          {profile?.profile?.type}{" "}
+                        </Text>
+                      </div>
+                    )}
+                  </Space>
+                  <h1 style={{ fontSize: 10 }}>{profile?.image}</h1>
+                  <h1>{profile?.image}</h1>
                   {!collapsed && (
                     <div style={{ lineHeight: 1.2 }}>
                       <div
@@ -429,7 +455,7 @@ const MainLayout = () => {
                           color: "#1f1f1f",
                         }}
                       >
-                        {profile?.name}
+                        <h1>{profile?.image}</h1>
                       </div>
                       <Text type="secondary" style={{ fontSize: 11 }}>
                         {profile?.role}

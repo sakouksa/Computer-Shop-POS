@@ -82,14 +82,13 @@ function CategoryPage() {
   const handleOpenModal = () => {
     setState((pre) => ({ ...pre, open: true }));
   };
-
   // handle Close Modal
   const handleCloseModal = () => {
     setState((pre) => ({ ...pre, open: false }));
     formRef.resetFields();
     setValidate({});
   };
-
+  
   // onFinish function new categories form
   const onFinish = async (item) => {
     let data = {

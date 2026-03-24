@@ -21,7 +21,7 @@ class AuthController extends Controller
             'phone' => 'nullable',
             'address' => 'nullable',
             'type' => 'nullable',
-            'image' => 'nullable|image|mimes:jpeg,png,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,gif|max:5120',
         ]);
         //create the user
         $user = User::create([

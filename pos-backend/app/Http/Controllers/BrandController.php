@@ -8,19 +8,33 @@ use Illuminate\Http\Request;
 
 class BrandController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    // Display a listing of the resource.
+
+    public function index(Request $request)
     {
-        $brands = Brand::orderBy('id', 'desc')->get();
+        $query = Brand::query();
+
+        // Search តាមឈ្មោះ
+        if ($request->has('text_search')) {
+            $query->where("name", "LIKE", "%" . $request->input('text_search') . "%");
+        }
+
+        // Filter តាម Status
+        if ($request->has('status')) {
+            $query->where("status", "=", $request->input('status'));
+        }
+
+        // ទាញយកទិន្នន័យ
+        $list = $query->orderBy("id", "desc")->get();
+
         return response()->json([
-            "list" => $brands
+            'list' => $list,
         ]);
     }
-    /**
-     * Store a newly created resource in storage.
-     */
+
+    // Store a newly created resource in storage.
+
     public function store(Request $request)
     {
         $request->validate([
@@ -47,9 +61,9 @@ class BrandController extends Controller
             'message' => 'រក្សាទុកម៉ាកយីហោដោយជោគជ័យ',
         ], 200);
     }
-    /**
-     * Display the specified resource.
-     */
+
+    // Display the specified resource.
+
     public function show(string $id)
     {
         $brand = Brand::find($id);
@@ -57,9 +71,9 @@ class BrandController extends Controller
             "data" => $brand
         ]);
     }
-    /**
-     * Update the specified resource in storage.
-     */
+
+    // Update the specified resource in storage.
+
     public function update(Request $request, string $id)
     {
         $brand = Brand::find($id);
@@ -69,14 +83,21 @@ class BrandController extends Controller
             'from_country' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image_remove' => 'nullable|string'
         ]);
         // កំណត់តម្លៃរូបភាពចាស់ជាមុន ការពារ Error បើ User មិនបានដូររូបថ្មី
-        $imagePath = $brand->image;
+        $imagePath = $brand->image; // តម្លៃដើមក្នុង DB
         if ($request->hasFile('image')) {
             if ($brand->image) {
                 Storage::disk('public')->delete($brand->image);
             }
             $imagePath = $request->file('image')->store('brands', 'public');
+        } else if ($request->image_remove) {
+            //លុប File ចេញពី Storage
+            if ($brand->image) {
+                Storage::disk('public')->delete($brand->image);
+            }
+            $imagePath = null;
         }
         $brand->update([
             'name' => $request->name,
@@ -86,14 +107,15 @@ class BrandController extends Controller
             'status' => $request->status,
         ]);
         return response()->json([
+            'image_remove' => $request->image_remove,
             "data" => $brand,
             "request" => $request,
             'message' => 'បានកែប្រែទិន្នន័យដោយជោគជ័យ',
         ], 200);
     }
-    /**
-     * Remove the specified resource from storage.
-     */
+
+    // Remove the specified resource from storage.
+
     public function destroy(string $id)
     {
         $brand = Brand::find($id);

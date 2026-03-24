@@ -6,51 +6,57 @@ import LoginPage from "./page/auth/LoginPage";
 import RegisterPage from "./page/auth/RegisterPage";
 import RouteNoFound from "./page/error-page/404";
 import MainLayout from "./component/layout/MainLayout";
-import MainLayoutLogin from "./component/layout/MainLayoutLogin";
 import CustomerPage from "./page/customer/CustomerPage";
 import ProductPage from "./page/product/ProductPage";
 import RolePage from "./page/role/RolePage";
-import { ConfigProvider, App as AntdApp } from "antd"; // Import AntdApp
-// Import Ant Design ConfigProvider
-// Import Font (អ្នកបានដំឡើងរួចហើយ)
-import "@fontsource/kantumruy-pro";
-import "@fontsource/kantumruy-pro/700.css";
 import CategoryPage from "./page/category/CategoryPage";
 import ProvincePage from "./page/province/ProvincePage";
 
+// Import Ant Design
+import { ConfigProvider, App as AntdApp } from "antd";
+
+// Import Fonts
+import "@fontsource/kantumruy-pro";
+import "@fontsource/kantumruy-pro/700.css";
+import ServerErrorPage from "./page/error-page/500";
+import BrandPage from "./page/brand/BrandPage";
+
 function App() {
   return (
-    // ប្រើ ConfigProvider ដើម្បីកំណត់ Font ឱ្យគ្រប់ Antd Components
     <ConfigProvider
       theme={{
         token: {
           fontFamily: "'Kantumruy Pro', sans-serif",
-          fontSize: 15, // ដំឡើងទំហំអក្សរបន្តិចឱ្យស្រួលអាន
+          fontSize: 15,
         },
       }}
     >
-      <BrowserRouter>
-        <Routes>
-          {/* Layout Main */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/customer" element={<CustomerPage />} />
-            <Route path="/product" element={<ProductPage />} />
-            <Route path="/role" element={<RolePage />} />
-            <Route path="/category" element={<CategoryPage />} />
-            <Route path="/province" element={<ProvincePage />} />
-            <Route path="*" element={<RouteNoFound />} />
-          </Route>
+      <AntdApp>
+        <BrowserRouter>
+          <Routes>
+            {/* Layout Main */}
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/customer" element={<CustomerPage />} />
+              <Route path="/product" element={<ProductPage />} />
+              <Route path="/role" element={<RolePage />} />
+              <Route path="/category" element={<CategoryPage />} />
+              <Route path="/brand" element={<BrandPage />} />
+              <Route path="/province" element={<ProvincePage />} />
+            </Route>
 
-          {/* Layout Login */}
-          <Route element={<MainLayoutLogin />}>
+            {/* Layout Auth */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            {/* ២.  /500  Error Server*/}
+            <Route path="/500" element={<ServerErrorPage />} />
+
+            {/* 404 Page NoFound */}
             <Route path="*" element={<RouteNoFound />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </AntdApp>
     </ConfigProvider>
   );
 }
