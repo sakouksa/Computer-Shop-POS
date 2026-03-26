@@ -57,7 +57,7 @@ function BrandPage() {
       query_param += "&status=" + filter.status;
     }
 
-    const res = await request("brand" + query_param, "get", {});
+    const res = await request("brands" + query_param, "get", {});
     if (res && !res.errors) {
       setState((pre) => ({
         ...pre,
@@ -80,6 +80,7 @@ function BrandPage() {
   const handleCloseModal = () => {
     setState((pre) => ({ ...pre, open: false }));
     formRef.resetFields();
+    setFileList([]); //close file image
     setValidate({});
   };
 
@@ -101,7 +102,7 @@ function BrandPage() {
         formData.append("image_remove", image_remove);
       }
     }
-    let url = "brand";
+    let url = "brands";
     let method = "post";
 
     if (formRef.getFieldValue("id")) {
@@ -131,7 +132,7 @@ function BrandPage() {
       cancelText: "បោះបង់",
       centered: true,
       onOk: async () => {
-        const res = await request(`brand/${data.id}`, "delete", {});
+        const res = await request(`brands/${data.id}`, "delete", {});
         if (res && !res.error) {
           message.success(res.message || "លុបបានជោគជ័យ!");
           getlist();
@@ -188,6 +189,7 @@ function BrandPage() {
               style={{ width: 150 }}
               onChange={(value) => setFilter((p) => ({ ...p, status: value }))}
               options={[
+                { label: "ទាំងអស់", value: "" },
                 { label: "សកម្ម", value: "active" },
                 { label: "អសកម្ម", value: "inactive" },
               ]}
@@ -221,13 +223,14 @@ function BrandPage() {
           centered
           width={600}
           footer={null}
+          maskClosable={false}
         >
           <Form layout="vertical" onFinish={onFinish} form={formRef}>
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "16px",
+                // gridTemplateColumns: "1fr 1fr",
+                // gap: "16px",
               }}
             >
               <Form.Item

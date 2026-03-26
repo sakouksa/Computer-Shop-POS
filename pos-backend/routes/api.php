@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\RoleController;
 use Illuminate\Http\Request;
@@ -28,11 +29,12 @@ Route::middleware('auth:api')->group(function () {
     // Manage Route
     Route::apiResource('role', RoleController::class);
     Route::post('role/changeStatus/{id}', [RoleController::class, 'changeStatus']);
+    Route::apiResource("products", ProductController::class);
     Route::apiResource('categories', CategoryController::class);
-    Route::apiResource('province', ProvinceController::class)->withoutMiddleware('auth:api');
+    Route::apiResource('brands', BrandController::class);
     Route::apiResource('customer', CustomerController::class);
-    Route::apiResource('brand', BrandController::class);
     Route::apiResource('about', AboutController::class);
+    Route::apiResource('province', ProvinceController::class)->withoutMiddleware('auth:api');
 
     // ចេញពីប្រព័ន្ធ
     Route::post('logout', [AuthController::class, 'logout']);

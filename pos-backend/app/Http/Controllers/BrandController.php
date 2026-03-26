@@ -11,18 +11,18 @@ class BrandController extends Controller
 
     // Display a listing of the resource.
 
-    public function index(Request $request)
+    public function index(Request $req)
     {
         $query = Brand::query();
 
         // Search តាមឈ្មោះ
-        if ($request->has('text_search')) {
-            $query->where("name", "LIKE", "%" . $request->input('text_search') . "%");
+        if ($req->has('text_search')) {
+            $query->where("name", "LIKE", "%" . $req->input('text_search') . "%");
         }
 
         // Filter តាម Status
-        if ($request->has('status')) {
-            $query->where("status", "=", $request->input('status'));
+        if ($req->has('status')) {
+            $query->where("status", "=", $req->input('status'));
         }
 
         // ទាញយកទិន្នន័យ
