@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Product;
 
 class Category extends Model
 {
@@ -12,4 +13,9 @@ class Category extends Model
         'status',
         'parent_id',
     ];
+    // One category has many Product
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

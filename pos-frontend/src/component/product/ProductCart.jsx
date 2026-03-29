@@ -2,24 +2,22 @@ import React, { useState } from "react"; // 1. Import useState
 import { Button, Row } from "antd";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa6";
-
+import { ShoppingCartOutlined } from "@ant-design/icons";
 const ProductCard = ({
-  name,
+  product_name,
   description,
   price,
   image,
   id,
   onAddToWishlist,
   wishlist,
+  onAddToBag,
 }) => {
-  // 2. បង្កើត state ដើម្បីដឹងថា mouse កំពុងដាក់ពីលើឬអត់
   const [isHovered, setIsHovered] = useState(false);
-  
 
   return (
     <div style={{ height: "100%", display: "flex" }}>
       <div
-        // 3. ដាក់ event ដើម្បីចាប់ពេល mouse ចូល និង ចេញ
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
@@ -32,21 +30,17 @@ const ProductCard = ({
           width: "100%",
           margin: "10px",
 
-          // 4. កន្លែងកែប្រែ Style ពេល Hover
           boxShadow: isHovered
             ? "rgba(0, 0, 0, 0.2) 0px 20px 30px"
             : "rgba(149, 157, 165, 0.4) 0px 8px 24px",
 
-          // ធ្វើឱ្យប្រអប់ងើបឡើងលើបន្តិចពេល Hover
           transform: isHovered ? "translateY(-5px)" : "translateY(0)",
 
-          // ធ្វើឱ្យចលនារលូន (Smooth animation)
           transition: "all 0.3s ease",
-          cursor: "pointer", // ដូររូប Mouse ទៅជាដៃ
+          cursor: "pointer",
         }}
       >
         <div>
-          {/* ផ្នែករូបភាព */}
           <div
             style={{
               height: "180px",
@@ -57,7 +51,7 @@ const ProductCard = ({
           >
             <img
               src={image}
-              alt={name}
+              alt={"រូបភាពមានបញ្ហា" + product_name}
               style={{
                 maxWidth: "100%",
                 maxHeight: "100%",
@@ -67,7 +61,9 @@ const ProductCard = ({
             />
           </div>
           <Row justify="space-between">
-            <div style={{ fontWeight: "bold", fontSize: 16 }}>{name}</div>
+            <div style={{ fontWeight: "bold", fontSize: 16 }}>
+              {product_name}
+            </div>
             {wishlist ? (
               <FaHeart
                 onClick={onAddToWishlist}
@@ -94,10 +90,22 @@ const ProductCard = ({
           </div>
         </div>
 
-        {/* ប៊ូតុង */}
+        {/* button add to bag */}
         <div style={{ textAlign: "right", marginTop: 15 }}>
-          <Button type="primary" >
-            Add to bag
+          <Button
+            type="primary"
+            onClick={onAddToBag}
+            icon={<ShoppingCartOutlined />}
+            style={{
+              borderRadius: "6px",
+              display: "inline-flex",
+              alignItems: "center",
+              fontWeight: "500",
+              height: "38px",
+              boxShadow: "none",
+            }}
+          >
+            ថែមចូលកន្ត្រក
           </Button>
         </div>
       </div>

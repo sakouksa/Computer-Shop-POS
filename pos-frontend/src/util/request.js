@@ -38,10 +38,10 @@ export const request = (url = "", method = "", data = {}) => {
         // debugger;
         if (status == 500) {
           //alert message error server
-          // errors.message =
-          //   "500 : មានបញ្ហាបច្ចេកទេសក្នុងប្រព័ន្ធ សូមព្យាយាមម្តងទៀត!";
+          errors.message =
+            "500 : មានបញ្ហាបច្ចេកទេសក្នុងប្រព័ន្ធ សូមព្យាយាមម្តងទៀត!";
           //return page error 500
-          window.location.href = "/500";
+          // window.location.href = "/500";
           return;
         }
         if (data.errors) {
@@ -60,7 +60,7 @@ export const request = (url = "", method = "", data = {}) => {
         };
       }
       // ករណីគ្មាន Internet ឬ Server បិទ (Network Error)
-      window.location.href = "/500";
+      // window.location.href = "/500";
       return {
         error: true,
         errors: { message: "501 : មិនអាចតភ្ជាប់ទៅកាន់ Server បានទេ!" },

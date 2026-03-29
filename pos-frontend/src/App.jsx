@@ -18,8 +18,9 @@ import { ConfigProvider, App as AntdApp } from "antd";
 // Import Fonts
 import "@fontsource/kantumruy-pro";
 import "@fontsource/kantumruy-pro/700.css";
-import ServerErrorPage from "./page/error-page/500";
+// import ServerErrorPage from "./page/error-page/500";
 import BrandPage from "./page/brand/BrandPage";
+import ProductPageItemCard from "./page/product/ProductPageItemCard";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/customer" element={<CustomerPage />} />
               <Route path="/product" element={<ProductPage />} />
+              <Route path="/product-card" element={<ProductPageItemCard />} />
               <Route path="/role" element={<RolePage />} />
               <Route path="/category" element={<CategoryPage />} />
               <Route path="/brand" element={<BrandPage />} />
@@ -49,8 +51,8 @@ function App() {
             {/* Layout Auth */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            {/* ២.  /500  Error Server*/}
-            <Route path="/500" element={<ServerErrorPage />} />
+            {/* ២.  /500  Error Server
+            <Route path="/500" element={<ServerErrorPage />} /> */}
 
             {/* 404 Page NoFound */}
             <Route path="*" element={<RouteNoFound />} />

@@ -26,6 +26,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
+import { MdApps, MdFormatListBulleted } from "react-icons/md";
 
 import {
   MdDashboardCustomize,
@@ -35,6 +36,7 @@ import {
   MdOutlineLanguage,
   MdOutlineLocationCity,
   MdOutlineBrandingWatermark,
+  MdInventory,
 } from "react-icons/md";
 
 import { RiCustomerService2Fill, RiUserSharedLine } from "react-icons/ri";
@@ -76,8 +78,9 @@ const items = [
     getItem("បញ្ជីអតិថិជន", "/customer", <AiOutlineUsergroupAdd />),
     getItem("ប្រភេទអតិថិជន", "/customer_type", <BiCategoryAlt />),
   ]),
-  getItem("សារពើភ័ណ្ឌ", "inventory", <MdProductionQuantityLimits />, [
-    getItem("បញ្ជីផលិតផល", "/product", <MdProductionQuantityLimits />),
+  getItem("សារពើភ័ណ្ឌ", "inventory", <MdInventory />, [
+    getItem("បញ្ជីផលិតផល", "/product", <MdFormatListBulleted/>),
+    getItem("កាតផលិតផល", "/product-card", <MdApps />),
     getItem("ប្រភេទផលិតផល", "/category", <BiCategoryAlt />),
     getItem("ម៉ាកផលិតផល", "/brand", <MdOutlineBrandingWatermark />),
   ]),
@@ -149,10 +152,8 @@ const MainLayout = () => {
       "user",
       "settings",
     ];
-    // ស្វែងរក Key ចុងក្រោយដែលអ្នកទើបតែចុចបើក
     const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
 
-    // ប្រសិនបើចុចលើ Menu ដែលមិនមែនជា Root (ចុចលើ Item កូនៗខាងក្នុង)
     if (latestOpenKey && rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
       setOpenKeys(keys);
     } else {

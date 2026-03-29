@@ -17,7 +17,7 @@ import { CiCloudOn, CiEdit } from "react-icons/ci";
 import { request } from "../../util/request";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { RiSave3Fill } from "react-icons/ri";
-import { SearchOutlined } from "@ant-design/icons";
+import { FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import { IoMdAddCircle } from "react-icons/io";
 // import dayJs
 
@@ -196,9 +196,9 @@ function CategoryPage() {
             <Button
               type="primary"
               onClick={handleFilter}
-              icon={<SearchOutlined />} // បន្ថែម Icon ស្វែងរក
+              icon={<FilterOutlined />} 
             >
-              ស្វែងរក
+              ច្រោះទិន្នន័យ
             </Button>
           </Space>
           <Button

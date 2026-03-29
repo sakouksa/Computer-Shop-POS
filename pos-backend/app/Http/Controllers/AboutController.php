@@ -2,67 +2,86 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Requests\AboutRequest;
 use App\Models\About;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 
 class AboutController extends Controller
 {
-    // Display a listing of the resource.
-    public function index()
+    /**
+     * Get all About records and return as JSON list.
+     * @return JsonResponse
+     */
+    public function index(): JsonResponse
     {
         return response()->json([
             'list' => About::all(),
         ]);
     }
 
-    // Store a newly created resource in storage.
-    public function store(AboutRequest $request)
+    /**
+     * Store a newly created About record using validated data.
+     * @param AboutRequest $request
+     * @return JsonResponse
+     */
+    public function store(AboutRequest $request): JsonResponse
     {
         $data = About::create($request->validated());
-        if (! $data){
-            return response ()->json ([
-                'error' => [
-                    'message' => 'Insert About Failed',
-                ],
+
+        if (!$data) {
+            return response()->json([
+                'error' => ['message' => 'ការបញ្ចូលទិន្នន័យ About បានបរាជ័យ'],
             ], 500);
         }
+
         return response()->json([
-            
             'data' => $data,
-            'message' => 'Insert About Successfully',
+            'message' => 'ការបញ្ចូលទិន្នន័យ About ត្រូវបានជោគជ័យ',
         ]);
     }
 
-    // Display the specified resource.
-    public function show(string $id)
+    /**
+     * Find and return a specific About record by ID.
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function show(string $id): JsonResponse
     {
         return response()->json([
             'data' => About::find($id),
         ]);
     }
 
-    // Update the specified resource in storage.
-    public function update(AboutRequest $request, string $id)
+    /**
+     * Update an existing About record with validated data.
+     * @param AboutRequest $request
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function update(AboutRequest $request, string $id): JsonResponse
     {
         $data = About::findOrFail($id);
         $data->update($request->validated());
 
         return response()->json([
             'data' => $data,
-            'message' => 'Update About Successfully',
+            'message' => 'ការកែប្រែទិន្នន័យ About ត្រូវបានជោគជ័យ',
         ]);
     }
 
-    // Remove the specified resource from storage.
-    public function destroy(string $id)
+    /**
+     * Delete an About record from the database.
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function destroy(string $id): JsonResponse
     {
         $data = About::findOrFail($id);
         $data->delete();
 
         return response()->json([
-            'message' => 'Delete About Successfully',
+            'message' => 'ការលុបទិន្នន័យ About ត្រូវបានជោគជ័យ',
         ]);
     }
 }

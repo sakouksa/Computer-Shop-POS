@@ -15,7 +15,7 @@ import {
 import { CiEdit } from "react-icons/ci";
 import { request } from "../../util/request";
 import { RiSave3Fill } from "react-icons/ri";
-import { SearchOutlined } from "@ant-design/icons";
+import { FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import { IoMdAddCircle } from "react-icons/io";
 import { dateClient } from "../../util/helper";
 import { MdDelete } from "react-icons/md";
@@ -197,7 +197,7 @@ function BrandPage() {
             <Button
               type="primary"
               onClick={handleFilter}
-              icon={<SearchOutlined />}
+              icon={<FilterOutlined />}
             >
               ច្រោះទិន្នន័យ
             </Button>
