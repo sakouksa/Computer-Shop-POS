@@ -38,7 +38,7 @@ class BrandController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:brands,name',
             'code' => 'required|string|unique:brands,code',
             'from_country' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',
@@ -78,7 +78,7 @@ class BrandController extends Controller
     {
         $brand = Brand::find($id);
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:brands,name,' . $id,
             'code' => 'required|string|unique:brands,code,' . $id,
             'from_country' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',

@@ -24,8 +24,7 @@ import { BiSolidEditAlt } from "react-icons/bi";
 import MainPage from "../../component/layout/MainPage";
 import config from "../../util/config";
 import UploadButton from "../../component/button/UploadButton";
-import { name } from "dayjs/locale/km";
-
+import { usePreviewStore } from "../../store/previewStore";
 function BrandPage() {
   const [formRef] = Form.useForm();
   const [state, setState] = useState({
@@ -43,11 +42,32 @@ function BrandPage() {
   const [validate, setValidate] = useState({});
   const [fileList, setFileList] = useState([]);
 
+   // call Zustand Store
+    const { open, imgUrl, handleOpenPreview, handleClosePreview } =
+      usePreviewStore();
+  
+    //  handlePreview
+    const handlePreview = async (file) => {
+      if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj);
+      }
+      // ហៅ function ពី Zustand
+      handleOpenPreview(file.url || file.preview);
+    };
+    const getBase64 = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      });
+
   useEffect(() => {
-    getlist();
+    getList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getlist = async () => {
+  const getList = async () => {
     setState((pre) => ({ ...pre, loading: true }));
     let query_param = "?page=1";
     if (filter.text_search) {
@@ -115,7 +135,7 @@ function BrandPage() {
     if (res && !res.errors) {
       message.success(res.message || "ជោគជ័យ!");
       handleCloseModal();
-      getlist();
+      getList();
     } else {
       setValidate(res.errors || {});
       message.error(res?.message || "ប្រតិបត្តិការបរាជ័យ!");
@@ -135,7 +155,7 @@ function BrandPage() {
         const res = await request(`brands/${data.id}`, "delete", {});
         if (res && !res.error) {
           message.success(res.message || "លុបបានជោគជ័យ!");
-          getlist();
+          getList();
         } else {
           message.error(res?.message || "មានបញ្ហាក្នុងការលុប!");
         }
@@ -159,7 +179,7 @@ function BrandPage() {
   };
 
   const handleFilter = () => {
-    getlist();
+    getList();
   };
 
   return (
@@ -274,13 +294,22 @@ function BrandPage() {
                   customRequest={(e) => e.onSuccess("ok")}
                   listType="picture-card"
                   fileList={fileList}
-                  onChange={({ fileList }) => {
-                    setFileList(fileList);
-                  }}
+                  onPreview={handlePreview}
+                  onChange={({ fileList }) => setFileList(fileList)}
                   maxCount={1}
                 >
                   <UploadButton />
                 </Upload>
+                <Image
+                  wrapperStyle={{ display: "none" }}
+                  preview={{
+                    visible: open,
+                    onVisibleChange: (visible) => {
+                      if (!visible) handleClosePreview();
+                    },
+                    src: imgUrl,
+                  }}
+                />
               </Form.Item>
             </div>
 

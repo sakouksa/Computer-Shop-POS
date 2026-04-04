@@ -1,32 +1,22 @@
-import ProductCart from "../../component/product/ProductCart";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react"; // ១. បន្ថែម useCallback
 import { Row, Col, message } from "antd";
 import { request } from "../../util/request";
 import config from "../../util/config";
+import ProductCart from "../../component/product/ProductCart";
 
 function ProductPageItemCard() {
-  // const { list } = productStore();
   const [state, setState] = useState({
     list: [],
     total: 0,
     loading: false,
     open: false,
   });
-  const onAddToBagTest = (item) => {
-    // បង្ហាញក្នុង Console
-    // console.log(item);
-    message.success(`បានបន្ថែម "${item.product_name}" ទៅក្នុងកន្ត្រកជោគជ័យ!`);
-  };
 
-  useEffect(() => {
-    getlist();
-  }, []);
-
-  const getlist = async () => {
+  // ខ្ចប់ getList ជាមួយ useCallback ដើម្បីកុំឲ្យវាបង្កើតថ្មីរាល់ពេល Render
+  const getList = useCallback(async () => {
     setState((pre) => ({ ...pre, loading: true }));
-
     const res = await request("products", "get", {});
-    console.log("Response data:", res);
+
     if (res && !res.errors) {
       setState((pre) => ({
         ...pre,
@@ -39,6 +29,14 @@ function ProductPageItemCard() {
         message.error(res.errors?.message);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    getList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const onAddToBagTest = (item) => {
+    message.success(`បានបន្ថែម "${item.product_name}" ទៅក្នុងកន្ត្រកជោគជ័យ!`);
   };
 
   return (

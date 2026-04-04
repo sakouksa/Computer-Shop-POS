@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Brand;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
@@ -35,6 +36,8 @@ class ProductController extends Controller
 
         return response()->json([
             "list" => $product,
+            "category" => Category::all(),
+            "brand" => Brand::all(),
         ]);
     }
 
@@ -104,6 +107,13 @@ class ProductController extends Controller
                 Storage::disk('public')->delete($product->image);
             }
             $data['image'] = $request->file('image')->store('products', 'public');
+        }
+        if ($request->image_remove != "") {
+            //លុប File ចេញពី Storage
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+            $imagePath = null;
         }
 
         $product->update($data);

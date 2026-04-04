@@ -21,6 +21,7 @@ import "@fontsource/kantumruy-pro/700.css";
 // import ServerErrorPage from "./page/error-page/500";
 import BrandPage from "./page/brand/BrandPage";
 import ProductPageItemCard from "./page/product/ProductPageItemCard";
+import ImagePreviewGlobal from "./component/image/ImagePreviewGlobal";
 
 function App() {
   return (

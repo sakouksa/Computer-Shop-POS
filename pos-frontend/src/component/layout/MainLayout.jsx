@@ -161,11 +161,6 @@ const MainLayout = () => {
     }
   };
 
-  useEffect(() => {
-    const path = location.pathname.split("/")[1];
-    if (path) setOpenKeys([path]);
-  }, [location.pathname]);
-
   if (!profile) return null;
 
   // Dropdown Items (Notifications & Profile) - ទុកកូដដដែលរបស់អ្នក

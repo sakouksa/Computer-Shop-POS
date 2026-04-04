@@ -44,6 +44,7 @@ function CategoryPage() {
 
   useEffect(() => {
     getlist();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [validate, setValidate] = useState({});
   // posts Function
@@ -88,7 +89,7 @@ function CategoryPage() {
     formRef.resetFields();
     setValidate({});
   };
-  
+
   // onFinish function new categories form
   const onFinish = async (item) => {
     let data = {
@@ -196,7 +197,7 @@ function CategoryPage() {
             <Button
               type="primary"
               onClick={handleFilter}
-              icon={<FilterOutlined />} 
+              icon={<FilterOutlined />}
             >
               ច្រោះទិន្នន័យ
             </Button>
@@ -278,7 +279,7 @@ function CategoryPage() {
         {/* Data table */}
         <Table
           dataSource={state.list}
-          // loading={state.loading}
+          loading={state.loading}
           scroll={{ x: 800 }}
           columns={[
             {

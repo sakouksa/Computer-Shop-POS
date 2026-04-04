@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Button,
+  Col,
   Form,
   Image,
   Input,
@@ -12,11 +13,15 @@ import {
   Tag,
   Upload,
 } from "antd";
+import { Row } from "antd";
 import { CiEdit } from "react-icons/ci";
 import { request } from "../../util/request";
 import { RiSave3Fill } from "react-icons/ri";
-import { FilterOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { IoMdAddCircle } from "react-icons/io";
+import {
+  FilterOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 import { dateClient } from "../../util/helper";
 import { MdDelete } from "react-icons/md";
 import { ExclamationCircleFilled } from "@ant-design/icons";
@@ -24,37 +29,66 @@ import { BiSolidEditAlt } from "react-icons/bi";
 import MainPage from "../../component/layout/MainPage";
 import config from "../../util/config";
 import UploadButton from "../../component/button/UploadButton";
-import { name } from "dayjs/locale/km";
-
+import { usePreviewStore } from "../../store/previewStore";
 function ProductPage() {
   const [formRef] = Form.useForm();
   const [state, setState] = useState({
     list: [],
+    category: [],
+    brand: [],
     total: 0,
     loading: false,
     open: false,
   });
 
   const [filter, setFilter] = useState({
-    txt_search: "",
-    status: "",
+    txt_search: null,
+    status: null,
+    category_id: null,
+    brand_id: null,
   });
 
   const [validate, setValidate] = useState({});
   const [fileList, setFileList] = useState([]);
 
-  useEffect(() => {
-    getlist();
-  }, []);
+  // call Zustand Store
+  const { open, imgUrl, handleOpenPreview, handleClosePreview } =
+    usePreviewStore();
 
-  const getlist = async () => {
+  //  handlePreview
+  const handlePreview = async (file) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj);
+    }
+    // ហៅ function ពី Zustand
+    handleOpenPreview(file.url || file.preview);
+  };
+  const getBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+
+  const getList = async (param_filter) => {
+    param_filter = {
+      ...filter,
+      ...param_filter,
+    };
     setState((pre) => ({ ...pre, loading: true }));
     let query_param = "?page=1";
-    if (filter.txt_search !== null && filter.txt_search !== "") {
-      query_param += "&txt_search=" + filter.txt_search;
+    if (param_filter.txt_search !== null && param_filter.txt_search !== "") {
+      query_param += "&txt_search=" + param_filter.txt_search;
     }
-    if (filter.status !== null && filter.status !== "") {
-      query_param += "&status=" + filter.status;
+    if (param_filter.status !== null && param_filter.status !== "") {
+      query_param += "&status=" + param_filter.status;
+    }
+    if (param_filter.category_id) {
+      query_param += "&category_id=" + param_filter.category_id;
+    }
+    if (param_filter.brand_id) {
+      query_param += "&brand_id=" + param_filter.brand_id;
     }
 
     const res = await request("products" + query_param, "get", {});
@@ -63,6 +97,8 @@ function ProductPage() {
         ...pre,
         total: res.total,
         list: res.list || [],
+        category: res.category || [],
+        brand: res.brand || [],
         loading: false,
       }));
     } else {
@@ -72,6 +108,11 @@ function ProductPage() {
       }
     }
   };
+
+  useEffect(() => {
+    getList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleOpenModal = () => {
     setState((pre) => ({ ...pre, open: true }));
@@ -86,14 +127,17 @@ function ProductPage() {
 
   const onFinish = async (item) => {
     const formData = new FormData();
-    formData.append("name", item.name);
-    formData.append("code", item.code);
-    formData.append("from_country", item.from_country);
-    formData.append("status", item.status || "active");
+    formData.append("product_name", item.product_name);
+    formData.append("category_id", item.category_id);
+    formData.append("brand_id", item.brand_id);
+    formData.append("price", item.price);
+    formData.append("quantity", item.quantity);
+    formData.append("description", item.description || "");
+    formData.append("status", item.status || 0);
 
     // ករណីមានការ Upload រូបភាពថ្មី
     if (fileList.length > 0 && fileList[0].originFileObj) {
-      // បើមាន file ថ្មីដែលទើបជ្រើសរើស (ទាំង Insert និង Update)
+      // បន្ថែមរូបភាពទៅ FormData
       formData.append("image", fileList[0].originFileObj);
     } else if (fileList.length === 0 && formRef.getFieldValue("id")) {
       // បើ fileList ទទេ ហើយជាការ Update មានន័យថា User លុបរូបចោល
@@ -110,12 +154,12 @@ function ProductPage() {
       method = "post";
       formData.append("_method", "PUT");
     }
-
+    setState((p) => ({ ...p, loading: true }));
     const res = await request(url, method, formData);
     if (res && !res.errors) {
       message.success(res.message || "ជោគជ័យ!");
       handleCloseModal();
-      getlist();
+      getList();
     } else {
       setValidate(res.errors || {});
       message.error(res?.message || "ប្រតិបត្តិការបរាជ័យ!");
@@ -126,7 +170,15 @@ function ProductPage() {
     Modal.confirm({
       title: "បញ្ជាក់ការលុប",
       icon: <ExclamationCircleFilled style={{ color: "#ff4d4f" }} />,
-      content: "តើអ្នកពិតជាចង់លុបមែនដែរឬទេ?",
+      content: (
+        <div>
+          តើអ្នកពិតជាចង់លុបមុខទំនិញ <b>"{data.product_name || data.title}"</b>{" "}
+          នេះមែនដែរឬទេ?
+          <p style={{ color: "#8c8c8c", fontSize: "12px", marginTop: "8px" }}>
+            * សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានទេ។
+          </p>
+        </div>
+      ),
       okText: "លុបចេញ",
       okType: "danger",
       cancelText: "បោះបង់",
@@ -135,7 +187,7 @@ function ProductPage() {
         const res = await request(`products/${data.id}`, "delete", {});
         if (res && !res.error) {
           message.success(res.message || "លុបបានជោគជ័យ!");
-          getlist();
+          getList();
         } else {
           message.error(res?.message || "មានបញ្ហាក្នុងការលុប!");
         }
@@ -159,7 +211,17 @@ function ProductPage() {
   };
 
   const handleFilter = () => {
-    getlist();
+    getList();
+  };
+  const handleReset = () => {
+    const data = {
+      txt_search: null,
+      status: null,
+      category_id: null,
+      brand_id: null,
+    };
+    setFilter(data);
+    getList(data);
   };
 
   return (
@@ -170,23 +232,31 @@ function ProductPage() {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginBottom: 16,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+            gap: "16px",
+            marginBottom: "20px",
           }}
         >
-          <Space>
-            <div>ម៉ាកផលិតផលសរុប: {state.list.length}</div>
+          <Space wrap size={[8, 16]} style={{ flex: 1 }}>
+            <div style={{ fontWeight: "bold" }}>
+              ផលិតផលសរុប: {state.list.length}
+            </div>
             <Input.Search
               allowClear
+              value={filter.txt_search}
               onChange={(e) =>
                 setFilter((p) => ({ ...p, txt_search: e.target.value }))
               }
               placeholder="ស្វែងផលិតផល..."
               onSearch={handleFilter}
+              style={{ width: 200 }}
             />
             <Select
               allowClear
               placeholder="ជ្រើសរើសស្ថានភាព"
-              style={{ width: 150 }}
+              style={{ width: 140 }}
+              value={filter.status}
               onChange={(value) => setFilter((p) => ({ ...p, status: value }))}
               options={[
                 { label: "ទាំងអស់", value: "" },
@@ -194,6 +264,37 @@ function ProductPage() {
                 { label: "អសកម្ម", value: 0 },
               ]}
             />
+            <Select
+              placeholder="ជ្រើសរើសប្រភេទ"
+              style={{ width: 150 }}
+              value={filter.category_id}
+              onChange={(value) =>
+                setFilter((p) => ({ ...p, category_id: value }))
+              }
+              options={state.category?.map((item) => ({
+                label: item.name,
+                value: item.id,
+              }))}
+            />
+            <Select
+              placeholder="ជ្រើសរើសម៉ាក"
+              style={{ width: 130 }}
+              value={filter.brand_id}
+              onChange={(value) =>
+                setFilter((p) => ({ ...p, brand_id: value }))
+              }
+              options={state.brand?.map((item) => ({
+                label: item.name,
+                value: item.id,
+              }))}
+            />
+            <Button
+              type="default"
+              onClick={handleReset}
+              icon={<ReloadOutlined />}
+            >
+              សម្អាត
+            </Button>
             <Button
               type="primary"
               onClick={handleFilter}
@@ -202,16 +303,16 @@ function ProductPage() {
               ច្រោះទិន្នន័យ
             </Button>
           </Space>
+
           <Button
             type="primary"
             onClick={handleOpenModal}
             icon={<PlusOutlined />}
-            style={{ borderRadius: "8px", }}
+            style={{ borderRadius: "8px" }}
           >
-            បង្កើតផលិតផលថ្មី
+            បន្ថែមថ្មី
           </Button>
         </div>
-
         <Modal
           title={
             formRef.getFieldValue("id") ? "កែប្រែផលិតផល" : "បង្កើតផលិតផលថ្មី"
@@ -220,67 +321,148 @@ function ProductPage() {
           onCancel={handleCloseModal}
           centered
           width={600}
+          
           footer={null}
           maskClosable={false}
         >
           <Form layout="vertical" onFinish={onFinish} form={formRef}>
-            <div
-              style={{
-                display: "grid",
-              }}
-            >
-              <Form.Item
-                label="ឈ្មោះផលិតផល"
-                name="name"
-                {...validate.product_name}
-                rules={[{ required: true, message: "សូមបញ្ចូលឈ្មោះផលិតផល!" }]}
-              >
-                <Input placeholder="បញ្ចូលឈ្មោះផលិតផល" />
-              </Form.Item>
-
-              <Form.Item
-                label="កូដម៉ាក"
-                name="code"
-                {...validate.code}
-                rules={[{ required: true, message: "សូមបញ្ចូលកូដ!" }]}
-              >
-                <Input placeholder="បញ្ចូលកូដផលិតផល" />
-              </Form.Item>
-
-              <Form.Item
-                label="មកពីប្រទេស"
-                name="from_country"
-                {...validate.from_country}
-                rules={[{ required: true, message: "សូមបញ្ចូលឈ្មោះប្រទេស!" }]}
-              >
-                <Input placeholder="ឧទាហរណ៍៖ កម្ពុជា, ជប៉ុន..." />
-              </Form.Item>
-
-              <Form.Item label="ស្ថានភាព" name="status">
-                <Select
-                  placeholder="ជ្រើសរើសស្ថានភាព"
-                  options={[
-                    { label: "សកម្ម", value: "active" },
-                    { label: "អសកម្ម", value: "inactive" },
-                  ]}
-                />
-              </Form.Item>
-              <Form.Item label="រូបភាព" {...validate.image}>
-                <Upload
-                  customRequest={(e) => e.onSuccess("ok")}
-                  listType="picture-card"
-                  fileList={fileList}
-                  onChange={({ fileList }) => {
-                    setFileList(fileList);
-                  }}
-                  maxCount={1}
+            <Row gutter={16}>
+              {/* ឈ្មោះផលិតផល - Full Width */}
+              <Col span={12}>
+                <Form.Item
+                  label="ឈ្មោះផលិតផល"
+                  name="product_name"
+                  {...validate.product_name}
+                  rules={[{ required: true, message: "សូមបញ្ចូលឈ្មោះផលិតផល!" }]}
                 >
-                  <UploadButton />
-                </Upload>
-              </Form.Item>
-            </div>
+                  <Input placeholder="បញ្ចូលឈ្មោះផលិតផល" />
+                </Form.Item>
+              </Col>
 
-            <Form.Item style={{ textAlign: "right", marginBottom: 0 }}>
+              {/* ប្រភេទផលិតផល & ម៉ាកផលិតផល - 50/50 Split */}
+              <Col span={12}>
+                <Form.Item
+                  label="ប្រភេទផលិតផល"
+                  name="category_id"
+                  {...validate.category_id}
+                  rules={[
+                    { required: true, message: "សូមជ្រើសរើសប្រភេទផលិតផល!" },
+                  ]}
+                >
+                  <Select
+                    placeholder="ជ្រើសរើសប្រភេទ"
+                    options={state.category?.map((item) => ({
+                      label: item.name,
+                      value: item.id,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="ម៉ាកផលិតផល"
+                  name="brand_id"
+                  {...validate.brand_id}
+                  rules={[
+                    { required: true, message: "សូមជ្រើសរើសម៉ាកផលិតផល!" },
+                  ]}
+                >
+                  <Select
+                    placeholder="ជ្រើសរើសម៉ាក"
+                    options={state.brand?.map((item) => ({
+                      label: item.name,
+                      value: item.id,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+
+              {/* តម្លៃផលិតផល & ចំនួនផលិតផល - 50/50 Split */}
+              <Col span={12}>
+                <Form.Item
+                  label="តម្លៃផលិតផល"
+                  name="price"
+                  {...validate.price}
+                  rules={[{ required: true, message: "សូមបញ្ចូលតម្លៃផលិតផល!" }]}
+                >
+                  <Input
+                    placeholder="បញ្ចូលតម្លៃផលិតផល"
+                    type="number"
+                    step="1"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="ចំនួនផលិតផល"
+                  name="quantity"
+                  {...validate.quantity}
+                  rules={[{ required: true, message: "សូមបញ្ចូលចំនួនផលិតផល!" }]}
+                >
+                  <Input
+                    placeholder="បញ្ចូលចំនួនផលិតផល"
+                    type="number"
+                    step="1"
+                  />
+                </Form.Item>
+              </Col>
+
+              {/* ស្ថានភាព - Full Width */}
+              <Col span={12}>
+                <Form.Item label="ស្ថានភាព" name="status">
+                  <Select
+                    placeholder="ជ្រើសរើសស្ថានភាព"
+                    options={[
+                      { label: "សកម្ម", value: 1 },
+                      { label: "អសកម្ម", value: 0 },
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+
+              {/* ពិពណ៌ផលិតផល - Full Width */}
+              <Col span={24}>
+                <Form.Item label="ពិពណ៌ផលិតផល" name="description">
+                  <Input.TextArea
+                    placeholder="បញ្ចូលពិពណ៌ផលិតផល"
+                    autoSize={{ minRows: 3, maxRows: 5 }}
+                  />
+                </Form.Item>
+              </Col>
+
+              {/* រូបភាព - Full Width */}
+              <Col span={24}>
+                <Form.Item label="រូបភាព" {...validate.image}>
+                  <Upload
+                    customRequest={(e) => e.onSuccess("ok")}
+                    listType="picture-card"
+                    fileList={fileList}
+                    onPreview={handlePreview}
+                    onChange={({ fileList }) => setFileList(fileList)}
+                    maxCount={1}
+                  >
+                    <UploadButton />
+                  </Upload>
+                  <Image
+                    wrapperStyle={{ display: "none" }}
+                    preview={{
+                      visible: open,
+                      onVisibleChange: (visible) => {
+                        if (!visible) handleClosePreview();
+                      },
+                      src: imgUrl,
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            {/* Form Actions */}
+            <Form.Item
+              style={{ textAlign: "right", marginBottom: 0, }}
+            >
               <Space>
                 <Button onClick={handleCloseModal}>បោះបង់</Button>
                 <Button
@@ -322,15 +504,15 @@ function ProductPage() {
             },
             {
               title: "ប្រភេទ",
-              dataIndex: ["category", "name"],
+              dataIndex: "category",
               key: "category",
-              render: (name) => name,
+              render: (category) => category?.name,
             },
             {
               title: "ម៉ាក/Brand",
-              dataIndex: ["brand", "name"],
+              dataIndex: "brand",
               key: "brand",
-              render: (name) => name,
+              render: (brand) => brand?.name,
             },
             {
               title: "តម្លៃ",
@@ -371,7 +553,7 @@ function ProductPage() {
                 image ? (
                   <Image
                     src={config.image_path + image}
-                    width={50}
+                    width={80}
                     height={50}
                     style={{
                       borderRadius: "4px",
