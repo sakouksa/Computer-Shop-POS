@@ -87,17 +87,6 @@ const RegisterPage = () => {
     }
   };
 
-  // បង្កើត Component លេខកូដប្រទេសសម្រាប់ដាក់ក្នុង Input
-  const selectPrefix = (
-    <Form.Item name="prefix" noStyle initialValue="855">
-      <Select style={{ width: 80 }}>
-        <Option value="855">+855</Option>
-        <Option value="66">+66</Option>
-        <Option value="84">+84</Option>
-      </Select>
-    </Form.Item>
-  );
-
   return (
     <div
       style={{
@@ -136,20 +125,12 @@ const RegisterPage = () => {
         >
           <Input prefix={<MailOutlined />} placeholder="អ៊ីមែល" size="large" />
         </Form.Item>
-
-        {/* កែប្រែផ្នែកលេខទូរស័ព្ទឱ្យមាន Country Code នៅក្នុង Field តែមួយ */}
+        {/* phone number */}
         <Form.Item
           name="phone"
-          rules={[
-            { required: true, message: "សូមបញ្ចូលលេខទូរស័ព្ទ!" },
-            {
-              pattern: /^[0-9]{8,10}$/,
-              message: "ទម្រង់លេខទូរស័ព្ទមិនត្រឹមត្រូវ!",
-            },
-          ]}
+          rules={[{ required: true, message: "សូមបញ្ចូលលេខទូរស័ព្ទ!" }]}
         >
           <Input
-            addonBefore={selectPrefix}
             prefix={<PhoneOutlined />}
             placeholder="12 345 678"
             size="large"

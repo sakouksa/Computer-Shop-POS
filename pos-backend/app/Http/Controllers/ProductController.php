@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProductRequest;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
@@ -43,20 +44,9 @@ class ProductController extends Controller
 
     // Store a new product
 
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
-        // Form data file image
-        $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'required|exists:brands,id',
-            'product_name' => 'required|string',
-            'description' => 'nullable|string',
-            'quantity' => 'required|integer',
-            'price' => 'required|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'status' => 'boolean'
-        ]);
-        $data = $request->all();
+        $data = $request->validated();
 
         if ($request->hasFile('image')) {
             // បង្កើត Folder products ក្នុង storage/app/public
@@ -67,7 +57,7 @@ class ProductController extends Controller
         return response()->json([
             "message" => "រក្សាទុកទិន្នន័យផលិតផលថ្មីជោគជ័យ",
             "data" =>  $product,
-        ]);
+        ], 201);
     }
 
     // Show a single product
@@ -81,26 +71,20 @@ class ProductController extends Controller
         }
         return response()->json([
             "data" => $product->load(['category', 'brand']),
-        ]);
+        ], 201);
     }
 
     // Update the specified resource in storage.
 
-    public function update(Request $request, string $id)
+    public function update(ProductRequest $request, string $id)
     {
         $product = Product::find($id);
-        $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'required|exists:brands,id',
-            'product_name' => 'required|string',
-            'description' => 'nullable|string',
-            'quantity' => 'required|integer',
-            'price' => 'required|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'status' => 'boolean'
-        ]);
-
-        $data = $request->all();
+        if (!$product) {
+            return response()->json([
+                "message" => "រកមិនឃើញផលិតផលនេះទេ"
+            ], 404);
+        }
+        $data = $request->validated();
 
         if ($request->hasFile('image')) {
             if ($product->image) {

@@ -279,7 +279,7 @@ function CategoryPage() {
         {/* Data table */}
         <Table
           dataSource={state.list}
-          loading={state.loading}
+          // loading={state.loading}
           scroll={{ x: 800 }}
           columns={[
             {

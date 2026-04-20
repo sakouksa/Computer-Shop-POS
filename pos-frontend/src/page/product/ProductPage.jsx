@@ -239,7 +239,7 @@ function ProductPage() {
           }}
         >
           <Space wrap size={[8, 16]} style={{ flex: 1 }}>
-            <div style={{ fontWeight: "bold" }}>
+            <div className="text-lg font-medium">
               ផលិតផលសរុប: {state.list.length}
             </div>
             <Input.Search

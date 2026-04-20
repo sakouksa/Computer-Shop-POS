@@ -293,7 +293,7 @@ const MainLayout = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                ខេ-ឃែស <span style={{ color: "#d4af37" }}>POS</span>
+                CMS <span style={{ color: "#d4af37" }}>POS</span>
               </span>
             )}
           </div>
