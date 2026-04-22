@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model
+class Permission extends Model
 {
     protected $fillable = [
         'name',
-        'code',
-        'description',
-        'status',
-        'test',
+        'group',
+        'is_menu_web',
+        'web_route_key',
     ];
-
 }

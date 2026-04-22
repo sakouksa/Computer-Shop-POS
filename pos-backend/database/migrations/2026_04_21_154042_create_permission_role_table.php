@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_roles', function (Blueprint $table) {
-            // Define the foreign key columns for the pivot table
-            $table->unsignedBigInteger('user_id');
+        Schema::create('permission_role', function (Blueprint $table) {
+            // Define the columns for the pivot table
             $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('permission_id');
             // Set the primary key for the pivot table
-            $table->primary(['user_id', 'role_id']);
+            $table->primary(['role_id', 'permission_id']);
             // Set up the foreign key constraints
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
         });
     }
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_roles');
+        Schema::dropIfExists('permission_role');
     }
 };
