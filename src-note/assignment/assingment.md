@@ -23,3 +23,11 @@ Assignment 2
         - expense_type(id,name
  description)
         - expense (id ,name, description,expense_type_id(fk), amount,expense_status, expense_date[peding, paid, cancel]create_at, create_by)
+assignment 3
+    + manage customer
+        -customer_type(id,name,description,discount_value)
+            - (1 general ,'',0),
+            - (1 silver ,'',10%),(50$-99$),
+            - (1 gold ,'',20%),(100$-199$),
+            - (1 platinum ,'',30),(200% - 300$),
+        - customer_type(id,firs_name,last_name, gender, dob,tel,address,create_at,create_by)

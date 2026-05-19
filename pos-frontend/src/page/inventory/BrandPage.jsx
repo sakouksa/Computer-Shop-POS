@@ -355,6 +355,7 @@ function BrandPage () {
         <Table
           dataSource={state.list}
           rowKey='id'
+          scroll={{x: 'max-content'}}
           pagination={{ defaultPageSize: 10, showSizeChanger: true }}
           columns={[
             {

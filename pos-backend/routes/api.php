@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerTypeController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePayrollController;
 use App\Http\Controllers\ExpenseController;
@@ -45,6 +46,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('brands', BrandController::class);
     // Customer routes
     Route::apiResource('customer', CustomerController::class);
+    Route::apiResource('customer_type', CustomerTypeController::class);
     // About routes
     Route::apiResource('about', AboutController::class);
     // Payment method routes

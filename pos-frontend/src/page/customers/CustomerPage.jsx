@@ -11,9 +11,9 @@ import {
   Tag,
   Row,
   Col,
-  Typography
+  Typography,
+  DatePicker
 } from 'antd'
-
 import {
   FilterOutlined,
   ReloadOutlined,
@@ -21,17 +21,14 @@ import {
   ExclamationCircleFilled,
   PlusOutlined
 } from '@ant-design/icons'
-
 import { CiEdit } from 'react-icons/ci'
 import { RiSave3Fill } from 'react-icons/ri'
 import { MdDelete } from 'react-icons/md'
 import { BiSolidEditAlt } from 'react-icons/bi'
+import dayjs from 'dayjs'
 
-// Utils & Services
-import { dateClient, isPermissionAction } from '../../utils/helper'
+import { isPermissionAction } from '../../utils/helper'
 import { customerService } from '../../services/customerService'
-
-// Components
 import PageLoader from '../../component/common/PageLoader'
 import ServerErrorPage from '../error-page/500'
 
@@ -39,272 +36,340 @@ const { Title, Text } = Typography
 
 function CustomerPage () {
   const [formRef] = Form.useForm()
-
   const [state, setState] = useState({
     list: [],
     total: 0,
     loading: false,
-    open: false
+    open: false,
+    customer_types: []
   })
-
+  const [isServerError, setIsServerError] = useState(false)
   const [filter, setFilter] = useState({
     txt_search: '',
-    status: null
+    customer_type_id: null
   })
-
-  const [isServerError, setIsServerError] = useState(false)
-  const [validate, setValidate] = useState({})
 
   useEffect(() => {
     getList()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getList = async (param_filter = {}) => {
-    const finalFilter = {
-      ...filter,
-      ...param_filter
-    }
-
-    // Start loading and reset error state
-    setState(pre => ({
-      ...pre,
-      loading: true
-    }))
+    const currentFilter = { ...filter, ...param_filter }
+    setState(pre => ({ ...pre, loading: true }))
     setIsServerError(false)
 
     try {
-      const res = await customerService.getList(finalFilter)
-
+      const res = await customerService.getList(currentFilter)
       if (res && !res.errors) {
-        // Success: Update list and total count
         setState(pre => ({
           ...pre,
-          total: res.total || res.list?.length || 0,
-          list: res.list || []
+          total: res.total || 0,
+          list: res.list || [],
+          customer_types: res.customer_types || [] // select array customer_type backend
         }))
       } else {
-        // API Error: Handle specific status codes (500, 403, etc.)
-        const status = res?.errors?.status
-        if (status === 500) {
-          setIsServerError(true)
-        } else if (status === 403) {
-          message.error("You don't have permission to view this list.")
-        } else {
-          message.error(res?.errors?.message || 'Something went wrong!')
-        }
+        if (res?.errors?.status === 500) setIsServerError(true)
+        else message.error(res?.errors?.message || 'Failed to fetch data')
       }
     } catch (error) {
-      // Network/System Crash: Show server error UI
       setIsServerError(true)
-      message.error('Server error occurred')
     } finally {
-      // Cleanup: Always stop loading regardless of result
-      setState(pre => ({
-        ...pre,
-        loading: false
-      }))
-    }
-  }
-  // Handle Modal Open
-  const handleOpenModal = () => {
-    formRef.resetFields()
-    setValidate({})
-    setState(pre => ({ ...pre, open: true }))
-  }
-
-  // Handle Modal Close
-  const handleCloseModal = () => {
-    setState(pre => ({ ...pre, open: false }))
-    formRef.resetFields()
-    setValidate({})
-  }
-
-  // Reset filter
-  const handleReset = () => {
-    const resetFilter = { txt_search: '', status: null }
-    setFilter(resetFilter)
-    getList(resetFilter)
-  }
-
-  // save / update data
-  const onFinish = async item => {
-    setState(pre => ({ ...pre, loading: true }))
-    let res = null
-
-    const id = formRef.getFieldValue('id')
-    if (id) {
-      res = await customerService.update(id, item)
-    } else {
-      res = await customerService.create(item)
-    }
-
-    if (res && !res.errors) {
-      message.success(res.message || 'Success!')
-      handleCloseModal()
-      getList()
-    } else {
-      setValidate(res.errors || {})
-      message.error(res?.errors?.message || 'Failed to perform action!')
       setState(pre => ({ ...pre, loading: false }))
     }
   }
 
-  // edit
+  const onFinish = async values => {
+    try {
+      const payload = {
+        ...values,
+        dob: values.dob ? values.dob.format('YYYY-MM-DD') : null
+      }
+      let res = values.id
+        ? await customerService.update(values.id, payload)
+        : await customerService.create(payload)
+
+      if (res && !res.errors) {
+        message.success(res.message || 'Success!')
+        handleCloseModal()
+        getList()
+      } else {
+        message.error(res?.errors?.message || 'Operation failed!')
+      }
+    } catch (error) {
+      message.error('Server error occurred.')
+    }
+  }
+
   const handleEdit = data => {
-    formRef.setFieldsValue({ ...data })
-    setValidate({})
+    formRef.setFieldsValue({
+      ...data,
+      dob: data.dob ? dayjs(data.dob) : null
+    })
     setState(pre => ({ ...pre, open: true }))
   }
 
-  // delete
-  const handleDelete = data => {
+  const handleDelete = async data => {
     Modal.confirm({
       title: 'Confirm Deletion',
       icon: <ExclamationCircleFilled style={{ color: '#ff4d4f' }} />,
-      content: `Are you sure you want to delete customer "${data.name}"?`,
+      content: `Are you sure you want to delete ${data.first_name} ${data.last_name}?`,
       okText: 'Delete',
       okType: 'danger',
       centered: true,
       onOk: async () => {
-        const res = await customerService.delete(data.id)
-        if (res && !res.error) {
-          message.success(res.message || 'Deleted successfully!')
-          getList()
-        } else {
-          message.error(res?.errors?.message || 'Delete failed!')
+        try {
+          const res = await customerService.delete(data.id)
+          if (res && !res.error) {
+            message.success('Deleted successfully!')
+            getList()
+          }
+        } catch (error) {
+          message.error('Error deleting.')
         }
       }
     })
   }
 
-  if (isServerError) {
-    return <ServerErrorPage onRetry={() => getList()} />
+  const handleCloseModal = () => {
+    setState(pre => ({ ...pre, open: false }))
+    formRef.resetFields()
   }
+
+  const handleReset = () => {
+    const data = { txt_search: '', customer_type_id: null }
+    setFilter(data)
+    getList(data)
+  }
+
+  if (isServerError) return <ServerErrorPage onRetry={() => getList()} />
 
   return (
     <div className='p-4'>
       {state.loading && <PageLoader />}
-      {/* Header Section */}
+
       <div className='bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6'>
         <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6'>
           <div>
-            <h2 className='text-xl font-bold text-gray-900 m-0 flex items-center gap-2'>
+            <h2 className='text-xl font-bold text-gray-900 m-0'>
               Customer Management
-              <span className='text-sm font-normal text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full'>
-                Total: {state.total || 0}
+              <span className='ml-2 text-sm font-normal text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full'>
+                Total: {state.total}
               </span>
             </h2>
-            <Text type='secondary' className='text-sm'>
-              Maintain and manage your customer database.
+            <Text type='secondary'>
+              Manage your shop customers and membership tiers.
             </Text>
           </div>
-
-          {isPermissionAction('customer.create') && (
-            <Button
-              type='primary'
-              onClick={handleOpenModal}
-              icon={<PlusOutlined />}
-              className='bg-indigo-600 hover:bg-indigo-700'
-            >
-              Add Customer
-            </Button>
-          )}
+          <div className='flex items-center gap-3'>
+            {isPermissionAction('customer.create') && (
+              <Button
+                type='primary'
+                icon={<PlusOutlined />}
+                onClick={() => setState(p => ({ ...p, open: true }))}
+                className='bg-indigo-600'
+              >
+                Add New
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Filter Section */}
-        <div className='border-t border-gray-100 pt-6'>
-          <div className='flex flex-wrap justify-between items-center gap-4'>
-            <Input
+        <div className='border-t border-gray-100 pt-6 flex flex-wrap justify-between items-center gap-4'>
+          <Input
+            placeholder='Search name or tel...'
+            value={filter.txt_search}
+            onChange={e =>
+              setFilter(p => ({ ...p, txt_search: e.target.value }))
+            }
+            onPressEnter={() => getList()}
+            prefix={<SearchOutlined />}
+            style={{ width: 250 }}
+          />
+          <div className='flex items-center gap-3'>
+            <Select
               allowClear
-              placeholder='Search by name, email, or phone...'
-              value={filter.txt_search}
-              onChange={e =>
-                setFilter(pre => ({ ...pre, txt_search: e.target.value }))
-              }
-              onPressEnter={() => getList()}
-              prefix={<SearchOutlined className='text-gray-400 mr-2' />}
-              style={{ width: 300 }}
+              placeholder='Membership Level'
+              style={{ width: 180 }}
+              value={filter.customer_type_id}
+              onChange={v => setFilter(p => ({ ...p, customer_type_id: v }))}
+              options={state.customer_types?.map(item => ({
+                label: item.name,
+                value: item.id
+              }))}
             />
-
-            <div className='flex items-center gap-3'>
-              <Select
-                allowClear
-                placeholder='Status'
-                style={{ width: 150 }}
-                value={filter.status}
-                onChange={value =>
-                  setFilter(pre => ({ ...pre, status: value }))
-                }
-                options={[
-                  { label: 'Active', value: 1 },
-                  { label: 'Inactive', value: 0 }
-                ]}
-              />
-
-              <div className='flex gap-2'>
-                <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                  Reset
-                </Button>
-                <Button
-                  type='primary'
-                  onClick={() => getList()}
-                  icon={<FilterOutlined />}
-                  className='bg-indigo-600 border-0 hover:bg-indigo-700'
-                >
-                  Filter
-                </Button>
-              </div>
-            </div>
+            <Button onClick={handleReset} icon={<ReloadOutlined />}>
+              Reset
+            </Button>
+            <Button
+              type='primary'
+              onClick={() => getList()}
+              icon={<FilterOutlined />}
+              className='bg-indigo-600'
+            >
+              Filter
+            </Button>
           </div>
         </div>
       </div>
 
+      <Modal
+        title={
+          formRef.getFieldValue('id')
+            ? 'Update Customer Record'
+            : 'Add New Customer'
+        }
+        open={state.open}
+        onCancel={handleCloseModal}
+        footer={null}
+        centered
+        width={700}
+      >
+        <Form layout='vertical' form={formRef} onFinish={onFinish}>
+          <Form.Item name='id' hidden>
+            <Input />
+          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label='First Name'
+                name='first_name'
+                rules={[{ required: true, message: 'First name is required' }]}
+              >
+                <Input placeholder='Enter first name' />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label='Last Name'
+                name='last_name'
+                rules={[{ required: true, message: 'Last name is required' }]}
+              >
+                <Input placeholder='Enter last name' />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label='Gender'
+                name='gender'
+                rules={[{ required: true, message: 'Please select gender' }]}
+              >
+                <Select
+                  placeholder='Select gender'
+                  options={[
+                    { label: 'Male', value: 'Male' },
+                    { label: 'Female', value: 'Female' }
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label='Date of Birth' name='dob'>
+                <DatePicker className='w-full' format='YYYY-MM-DD' />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label='Telephone'
+                name='tel'
+                rules={[
+                  { required: true, message: 'Telephone string is required' }
+                ]}
+              >
+                <Input placeholder='Enter phone number' />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label='Membership Tier'
+                name='customer_type_id'
+                rules={[
+                  { required: true, message: 'Please map a tier profile' }
+                ]}
+              >
+                <Select
+                  placeholder='Select level'
+                  options={state.customer_types?.map(i => ({
+                    label: i.name,
+                    value: i.id
+                  }))}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item label='Address' name='address'>
+                <Input.TextArea
+                  rows={2}
+                  placeholder='Enter current address line'
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <div className='text-right mt-6'>
+            <Space>
+              <Button onClick={handleCloseModal}>Cancel</Button>
+              <Button
+                type='primary'
+                htmlType='submit'
+                icon={
+                  formRef.getFieldValue('id') ? (
+                    <BiSolidEditAlt />
+                  ) : (
+                    <RiSave3Fill />
+                  )
+                }
+                className='bg-indigo-600'
+              >
+                {formRef.getFieldValue('id') ? 'Update' : 'Save'}
+              </Button>
+            </Space>
+          </div>
+        </Form>
+      </Modal>
       {isPermissionAction('customer.view') ? (
         <Table
           dataSource={state.list}
           rowKey='id'
-          className='shadow-sm rounded-xl overflow-hidden bg-white'
-          scroll={{ x: 1000 }}
+          scroll={{ x: 'max-content' }}
           columns={[
             {
-              title: 'Name',
-              dataIndex: 'name',
-              fixed: 'left',
-              render: text => (
-                <span className='font-medium text-gray-700'>{text}</span>
-              )
+              title: 'Customer Name',
+              render: (_, row) => `${row.first_name} ${row.last_name}`,
+              fixed: 'left'
             },
-            { title: 'Email', dataIndex: 'email' },
-            { title: 'Phone', dataIndex: 'phone' },
+            { title: 'Gender', dataIndex: 'gender' },
             {
-              title: 'Address',
-              dataIndex: 'address',
-              render: text => text || <Text type='secondary'>N/A</Text>
+              title: 'Date of Birth',
+              dataIndex: 'dob',
+              render: date => (date ? dayjs(date).format('YYYY-MM-DD') : '-')
             },
+            { title: 'Telephone', dataIndex: 'tel' },
             {
-              title: 'Status',
-              dataIndex: 'status',
+              title: 'Membership Tier',
+              render: (_, row) => {
+                const tierName = row.customer_type?.name || 'General'
+                let color = 'blue'
+                if (tierName.toLowerCase() === 'silver') color = 'gray'
+                if (tierName.toLowerCase() === 'gold') color = 'gold'
+                if (tierName.toLowerCase() === 'platinum') color = 'purple'
+                return <Tag color={color}>{tierName.toUpperCase()}</Tag>
+              }
+            },
+            { title: 'Address', dataIndex: 'address', ellipsis: true },
+            {
+              title: 'Actions',
               align: 'center',
-              render: v => (
-                <Tag
-                  color={v === 1 ? 'green' : 'red'}
-                  className='rounded-full px-3'
-                >
-                  {v === 1 ? 'Active' : 'Inactive'}
-                </Tag>
-              )
-            },
-            {
-              title: 'Created At',
-              dataIndex: 'created_at',
-              render: value => dateClient(value)
-            },
-            {
-              title: 'Action',
-              align: 'center',
+              width: 110,
               fixed: 'right',
-              width: 120,
+              hidden: !(
+                isPermissionAction('customer.update') ||
+                isPermissionAction('customer.delete')
+              ),
               render: (_, data) => (
                 <Space>
                   {isPermissionAction('customer.update') && (
@@ -335,103 +400,10 @@ function CustomerPage () {
             Access Denied
           </Title>
           <Text type='secondary'>
-            You do not have permission to view this data!
+            You do not have permission to view customer dashboard parameters!
           </Text>
         </div>
       )}
-
-      {/* Modal Section */}
-      <Modal
-        title={
-          formRef.getFieldValue('id')
-            ? 'Update Customer'
-            : 'Create New Customer'
-        }
-        open={state.open}
-        onCancel={handleCloseModal}
-        footer={null}
-        centered
-        width={650}
-      >
-        <Form layout='vertical' onFinish={onFinish} form={formRef}>
-          <Form.Item name='id' hidden>
-            <Input />
-          </Form.Item>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label='Full Name'
-                name='name'
-                {...validate.name}
-                rules={[{ required: true, message: 'Please enter name!' }]}
-              >
-                <Input placeholder='Enter customer name' />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label='Email Address'
-                name='email'
-                {...validate.email}
-                rules={[
-                  { required: true, message: 'Please enter email!' },
-                  { type: 'email', message: 'Invalid email format!' }
-                ]}
-              >
-                <Input placeholder='Enter email address' />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label='Phone Number'
-                name='phone'
-                {...validate.phone}
-                rules={[
-                  { required: true, message: 'Please enter phone number!' }
-                ]}
-              >
-                <Input placeholder='Enter phone number' />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label='Status' name='status' initialValue={1}>
-                <Select
-                  options={[
-                    { label: 'Active', value: 1 },
-                    { label: 'Inactive', value: 0 }
-                  ]}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={24}>
-              <Form.Item label='Address' name='address'>
-                <Input.TextArea rows={3} placeholder='Enter physical address' />
-              </Form.Item>
-            </Col>
-          </Row>
-          <div className='text-right mt-6'>
-            <Space>
-              <Button onClick={handleCloseModal} className='rounded-lg'>
-                Cancel
-              </Button>
-              <Button
-                type='primary'
-                htmlType='submit'
-                icon={
-                  formRef.getFieldValue('id') ? (
-                    <BiSolidEditAlt />
-                  ) : (
-                    <RiSave3Fill />
-                  )
-                }
-                className='bg-indigo-600 rounded-lg'
-              >
-                {formRef.getFieldValue('id') ? 'Update' : 'Save'}
-              </Button>
-            </Space>
-          </div>
-        </Form>
-      </Modal>
     </div>
   )
 }

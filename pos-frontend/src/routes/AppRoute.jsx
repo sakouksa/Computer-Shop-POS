@@ -8,6 +8,7 @@ import EmployeePayrollPage from '../page/employees/EmployeePayrollPage';
 import ProfilePage from '../page/profile/ProfilePage';
 import ExpensePage from '../page/expenses/ExpensePage';
 import ExpenseTypePage from '../page/expenses/ExpenseTypePage';
+import CustomerTypePage from '../page/customers/CustomerTypePage';
 
 const MainLayout = lazy(() => import('../component/layout/MainLayout'));
 const Dashboard = lazy(() => import('../page/dashboard/DashboardPage'));
@@ -38,6 +39,7 @@ const AppRoute = () => {
             <Route path="/pos" element={<PosPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/customer" element={<CustomerPage />} />
+            <Route path="/customer_type" element={<CustomerTypePage />} />
             <Route path="/product" element={<ProductPage />} />
             <Route path="/product_card" element={<ProductPageItemCard />} />
             <Route path="/category" element={<CategoryPage />} />

@@ -295,6 +295,7 @@ function CategoryPage () {
         <Table
           dataSource={state.list}
           rowKey='id'
+          scroll={{x: 'max-content'}}
           className='shadow-sm rounded-xl overflow-hidden'
           columns={[
             {
