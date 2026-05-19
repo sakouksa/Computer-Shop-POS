@@ -1,67 +1,38 @@
-// import React from "react";
-// import { Button, Result } from "antd";
-// import { ReloadOutlined } from "@ant-design/icons";
+import React from "react";
+import { Button, Result } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 
-// const ServerErrorPage = () => {
-//   return (
-//     <div style={styles.container}>
-//       <Result
-//         status="500"
-//         title={<span style={styles.title}>500</span>}
-//         subTitle={
-//           <div style={{ marginTop: "10px" }}>
-//             <h2 style={styles.h2}>មានបញ្ហាបច្ចេកទេស!</h2>
-//             <p style={styles.p}>
-//               សុំទោស! ប្រព័ន្ធកំពុងមានបញ្ហាពីខាងក្នុង Server
-//               សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។
-//             </p>
-//           </div>
-//         }
-//         extra={
-//           <Button
-//             type="primary"
-//             size="large"
-//             icon={<ReloadOutlined />}
-//             onClick={() => window.location.reload()}
-//             style={styles.btn}
-//           >
-//             ព្យាយាមម្តងទៀត
-//           </Button>
-//         }
-//       />
-//     </div>
-//   );
-// };
+const ServerErrorPage = ({ error, resetErrorBoundary }) => {
+  return (
+    <div className="flex items-center justify-center min-h-[80vh] bg-white">
+      <Result
+        status="500"
+        title={<span className="text-7xl font-extrabold text-red-500 leading-none">500</span>}
+        subTitle={
+          <div className="mt-3 text-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Technical Issue!
+            </h2>
+            <p className="text-sm text-slate-500 max-w-md mx-auto mt-2">
+              {error?.message ||
+                "Sorry! The server is currently experiencing an internal issue. Please try again later."}
+            </p>
+          </div>
+        }
+        extra={
+          <Button
+            type="primary"
+            size="large"
+            icon={<ReloadOutlined />}
+            onClick={resetErrorBoundary || (() => window.location.reload())}
+            className="!h-11 !px-8 !rounded-lg !bg-primary !border-0"
+          >
+            Try Again
+          </Button>
+        }
+      />
+    </div>
+  );
+};
 
-// // ប្រើ styles ដូចខាងលើ ឬប្តូរពណ៌តាមចិត្ត
-// const styles = {
-//   container: {
-//     display: "flex",
-//     justifyContent: "center",
-//     alignItems: "center",
-//     minHeight: "80vh",
-//     background: "#fff",
-//   },
-//   title: {
-//     fontSize: "80px",
-//     fontWeight: "800",
-//     color: "#ff4d4f",
-//     lineHeight: 1,
-//   }, // ប្តូរជាពណ៌ក្រហមសម្រាប់ Server Error
-//   h2: { color: "#1a1a1a", fontWeight: "600", fontSize: "22px" },
-//   p: {
-//     color: "#64748b",
-//     fontSize: "15px",
-//     maxWidth: "400px",
-//     margin: "0 auto",
-//   },
-//   btn: {
-//     borderRadius: "8px",
-//     height: "45px",
-//     padding: "0 30px",
-//     background: "#1a1a1a",
-//     border: "none",
-//   },
-// };
-
-// export default ServerErrorPage;
+export default ServerErrorPage;

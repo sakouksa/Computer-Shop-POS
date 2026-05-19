@@ -1,0 +1,68 @@
+Step 1 : php artisan make:middleware CheckPermission
+
+Step 2 : Define Middleware Logic
+
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class CheckPermission
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $permission = auth('api')->payload()->get('permission');
+        $hasPermission = collect($permission)->contains('name', $permission);
+        if ($hasPermission) {
+            return response()->json(
+                [
+                    'error' => 'Unauthorized'
+                ], 403
+            );
+        }
+        return $next($request);
+    }
+}
++ Step 3 : Register Middleware
+Register the middleware in the app/Http/bootstrap/app.php file user the $roteMiddleWare array:
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'permission' => \App\Http\Middleware\CheckPermission::class,
+        ]);
+    })
+
++ Step 4 : use middleware in route
+use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Route;
+
+// for Single Route
+Route::get('/dashboard', [DashboardController::class, 'viewDashboard'])
+    ->middleware('permission:Dashboard.View');
+
+// for Resource Route (Laravel recommend)
+Route::apiResource('products', ProductController::class)->middleware([
+    'index'   => 'permission:Product.View',
+    'show'    => 'permission:Product.ViewOne',
+    'store'   => 'permission:Product.Create',
+    'update'  => 'permission:Product.Update',
+    'destroy' => 'permission:Product.Remove',
+]);
+
+// or constructor in Controllers
+Route::apiResource('products', ProductController::class)->middleware([
+    'index'   => 'permission:Product.View',
+    'show'    => 'permission:Product.ViewOne',
+    'store'   => 'permission:Product.Create',
+    'update'  => 'permission:Product.Update',
+    'destroy' => 'permission:Product.Remove',
+]);
+
+* Update in login Controllers
+    $payload = [
+        "user" => $user,
+        "permissions" => $permissions,
+    ];
+    $token = JWTAuth::claims($payload)->fromUser(JWTAuth::user()); // token payload

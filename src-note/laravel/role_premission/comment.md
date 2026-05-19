@@ -60,6 +60,7 @@ INSERT INTO Permissions (`name`, `group`, `is_menu_web`, `web_route_key`) VALUES
 ('Product.Update', 'Product', NULL, NULL),
 ('Product.Delete', 'Product', NULL, NULL),
 ('Product.AdjustStock', 'Product', NULL, NULL),
+('Product.export', 'Product', NULL, NULL),
 
 -- CATEGORY
 ('Category.View', 'Category', 1, '/category'),

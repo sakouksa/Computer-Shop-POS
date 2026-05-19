@@ -6,17 +6,36 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-class CustomerController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class CustomerController extends Controller implements hasMiddleware
 {
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
+    public static function middleware(): array
+    {
+        return [
+            // Map each action to your specific permission list
+            new Middleware('permission:customer.view', only: ['index']),
+            new Middleware('permission:customer.view_single', only: ['show']),
+            new Middleware('permission:customer.create', only: ['store']),
+            new Middleware('permission:customer.edit', only: ['update']),
+            new Middleware('permission:customer.delete', only: ['destroy']),
+            new Middleware('permission:customer.change_level', only: ['changeLevel']),
+        ];
+    }
+
     /**
      * Get all customers ordered by latest ID
      */
     public function index(Request $req)
     {
         $customer = Customer::query(); //ORM eloquent
-        if ($req->has("text_search")) {
-            // $role->where("name", "=", $req->input("text_search")); // ទាល់តែដូចគ្នាបាន search filter ចេញ
-            $customer->where("name", "LIKE", "%" . $req->input("text_search") . "%"); //Function នេះ ស្រដៀងក៌វា search filter ចេញដែលគេប្រើ "LIKE"
+        if ($req->has("txt_search")) {
+            // $role->where("name", "=", $req->input("txt_search")); // ទាល់តែដូចគ្នាបាន search filter ចេញ
+            $customer->where("name", "LIKE", "%" . $req->input("txt_search") . "%"); //Function នេះ ស្រដៀងក៌វា search filter ចេញដែលគេប្រើ "LIKE"
         };
         if ($req->input("status") !== null && $req->input("status") !== "") {
             $customer->where("status", $req->input("status"));

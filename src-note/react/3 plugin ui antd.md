@@ -9,3 +9,5 @@
 
 - npm i zustand
 
+- npm install react-error-boundary
+

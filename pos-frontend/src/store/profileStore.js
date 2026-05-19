@@ -3,13 +3,14 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 export const profileStore = create(
   persist(
-    (set) => ({
-      profile: null,
+    (set, get) => ({
+      profile: null, //state
       access_token: null,
-
+      permission: null,
       setProfile: (params) => set((pre) => ({ profile: params })),
       setAccessToken: (params) => set((pre) => ({ access_token: params })),
-      logout: () => set((pre) => ({ profile: null })),
+      setPermission: (params) => set((pre) => ({ permission: params })),
+      logout: () => set((pre) => ({ profile: null, access_token: null })),
     }),
     {
       name: "user-profile", // name of the item in the storage (must be unique)

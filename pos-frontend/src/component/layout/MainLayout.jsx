@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from 'react'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import {
   Layout,
   Menu,
   Input,
   Space,
-  theme,
   Avatar,
   Badge,
   Dropdown,
   ConfigProvider,
-  Typography,
   Button,
-} from "antd";
+  Typography
+} from 'antd'
 
-// --- Import Icons ---
 import {
   UserOutlined,
   SettingOutlined,
@@ -24,469 +22,427 @@ import {
   SearchOutlined,
   FileTextOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined,
-} from "@ant-design/icons";
-import { MdApps, MdFormatListBulleted } from "react-icons/md";
+  MenuUnfoldOutlined
+} from '@ant-design/icons'
 
 import {
   MdDashboardCustomize,
   MdPointOfSale,
-  MdProductionQuantityLimits,
   MdOutlinePayments,
   MdOutlineLanguage,
   MdOutlineLocationCity,
   MdOutlineBrandingWatermark,
   MdInventory,
-} from "react-icons/md";
+  MdFormatListBulleted,
+  MdApps
+} from 'react-icons/md'
 
-import { RiCustomerService2Fill, RiUserSharedLine } from "react-icons/ri";
-import { BiCategoryAlt, BiSolidUserBadge } from "react-icons/bi";
-import { AiOutlineShoppingCart, AiOutlineUsergroupAdd } from "react-icons/ai";
-import { BsCashStack } from "react-icons/bs";
-import { CiCloudOn } from "react-icons/ci";
+import { RiCustomerService2Fill, RiUserSharedLine } from 'react-icons/ri'
+import { BiCategoryAlt, BiSolidUserBadge } from 'react-icons/bi'
+import { AiOutlineShoppingCart, AiOutlineUsergroupAdd } from 'react-icons/ai'
+import { BsCashStack } from 'react-icons/bs'
+import { CiCloudOn } from 'react-icons/ci'
+import { TbScanPosition } from 'react-icons/tb'
+import logo from '../../assets/img/logo.png'
+import { profileStore } from '../../store/profileStore'
+import config from '../../utils/config'
+import avatar from '../../assets/img/profile.jpg'
+import ServerErrorPage from '../../page/error-page/500'
+import { ErrorBoundary } from 'react-error-boundary'
+const { Header, Content, Footer, Sider } = Layout
 
-// Assets
-import logo from "../../assets/img/pos.jpg";
-import { profileStore } from "../../store/profileStore";
-import config from "../../util/config";
-
-const { Header, Content, Footer, Sider } = Layout;
-const { Text } = Typography;
-
-function getItem(label, key, icon, children) {
-  return { key, icon, children, label };
+function getItem (label, key, icon, children) {
+  return { key, icon, children, label }
 }
 
-const items = [
-  getItem("ផ្ទាំងគ្រប់គ្រង", "/", <MdDashboardCustomize />),
-  getItem("ការលក់", "sales", <MdPointOfSale />, [
-    getItem("ផ្ទាំងលក់ POS", "/pos", <MdPointOfSale />),
-    getItem("បញ្ជីលក់/វិក្កយបត្រ", "/orders", <AiOutlineShoppingCart />),
+const items_menu_left_tmp = [
+  getItem('Dashboard', '/', <MdDashboardCustomize />),
+  getItem('POS', '/pos', <MdPointOfSale />),
+  getItem('Orders', '/orders', <AiOutlineShoppingCart />),
+
+  getItem('Report', 'report', <MdDashboardCustomize />, [
+    getItem('Report Sales', '/report/top_sales', <BsCashStack />),
+    getItem('Order', '/order', <FileTextOutlined />),
+    getItem('Purchase', '/report/purchase', <AiOutlineShoppingCart />),
+    getItem('Expense', '/report/expense', <MdOutlinePayments />)
   ]),
-  getItem(
-    "របាយការណ៍",
-    "report",
-    <MdDashboardCustomize style={{ color: "#d4af37" }} />,
-    [
-      getItem("របាយការណ៍លក់", "/report/to_sales", <BsCashStack />),
-      getItem("បញ្ជីវិក្កយបត្រ", "/order", <FileTextOutlined />),
-      getItem("របាយការណ៍ទិញចូល", "/report/purchase", <AiOutlineShoppingCart />),
-      getItem("របាយការណ៍ចំណាយ", "/report/expense", <MdOutlinePayments />),
-    ],
-  ),
-  getItem("អតិថិជន", "customer", <RiCustomerService2Fill />, [
-    getItem("បញ្ជីអតិថិជន", "/customer", <AiOutlineUsergroupAdd />),
-    getItem("ប្រភេទអតិថិជន", "/customer_type", <BiCategoryAlt />),
+
+  getItem('Customer', 'customer', <RiCustomerService2Fill />, [
+    getItem('Customers', '/customer', <AiOutlineUsergroupAdd />),
+    getItem('Customer Types', '/customer_type', <BiCategoryAlt />)
   ]),
-  getItem("សារពើភ័ណ្ឌ", "inventory", <MdInventory />, [
-    getItem("បញ្ជីផលិតផល", "/product", <MdFormatListBulleted/>),
-    getItem("កាតផលិតផល", "/product-card", <MdApps />),
-    getItem("ប្រភេទផលិតផល", "/category", <BiCategoryAlt />),
-    getItem("ម៉ាកផលិតផល", "/brand", <MdOutlineBrandingWatermark />),
+
+  getItem('Inventory', 'inventory', <MdInventory />, [
+    getItem('Products', '/product', <MdFormatListBulleted />),
+    getItem('Product Cards', '/product_card', <MdApps />),
+    getItem('Categories', '/category', <BiCategoryAlt />),
+    getItem('Brands', '/brand', <MdOutlineBrandingWatermark />)
   ]),
-  getItem("ការទិញចូល", "purchase", <CiCloudOn />, [
-    getItem("បញ្ជីទិញចូល", "/purchase", <AiOutlineShoppingCart />),
-    getItem("អ្នកផ្គត់ផ្គង់", "/supplier", <RiUserSharedLine />),
+
+  getItem('Purchases', 'purchase', <CiCloudOn />, [
+    getItem('Purchase Orders', '/purchase', <AiOutlineShoppingCart />),
+    getItem('Suppliers', '/supplier', <RiUserSharedLine />)
   ]),
-  getItem("ចំណាយផ្សេងៗ", "expense", <BsCashStack />, [
-    getItem("បញ្ជីចំណាយ", "/expense", <MdOutlinePayments />),
-    getItem(
-      "ប្រភេទចំណាយ",
-      "/expense-type",
-      <BiCategoryAlt style={{ color: "#d4af37" }} />,
-    ),
+
+  getItem('Expenses', 'expense', <BsCashStack />, [
+    getItem('Expense List', '/expense', <MdOutlinePayments />),
+    getItem('Expense Types', '/expense_type', <BiCategoryAlt />)
   ]),
-  getItem("បុគ្គលិក", "employee", <AiOutlineUsergroupAdd />, [
-    getItem("បញ្ជីបុគ្គលិក", "/employee", <UserOutlined />),
-    getItem(
-      "បើកប្រាក់បៀវត្ស",
-      "/payroll",
-      <BsCashStack style={{ color: "#d4af37" }} />,
-    ),
+
+  getItem('Employees', 'employee', <AiOutlineUsergroupAdd />, [
+    getItem('Employee List', '/employee', <UserOutlined />),
+    getItem('Employee Payroll', '/employee/payrolls', <UserOutlined />),
+    getItem('Payroll', '/payroll', <BsCashStack />),
+    getItem('position', '/position', <TbScanPosition />)
   ]),
-  getItem("អ្នកប្រើប្រាស់", "user", <UserOutlined />, [
-    getItem("បញ្ជីអ្នកប្រើប្រាស់", "/list", <UserOutlined />),
-    getItem("កំណត់តួនាទី", "/role", <BiSolidUserBadge />),
-    getItem("សិទ្ធិប្រើប្រាស់", "/permission", <SafetyCertificateOutlined />),
+
+  getItem('Users', 'user', <UserOutlined />, [
+    getItem('User List', '/list', <UserOutlined />),
+    getItem('Roles', '/role', <BiSolidUserBadge />),
+    getItem('Permissions', '/permission', <SafetyCertificateOutlined />)
   ]),
-  getItem("ការកំណត់", "settings", <SettingOutlined />, [
-    getItem("ភាសា", "/lang", <MdOutlineLanguage />),
-    getItem("ខេត្ត/ក្រុង", "/province", <MdOutlineLocationCity />),
-    getItem("រូបិយវត្ថុ", "/currency", <BsCashStack />),
-    getItem(
-      "វិធីសាស្ត្រទូទាត់ប្រាក់",
-      "/payment_method",
-      <MdOutlinePayments />,
-    ),
-  ]),
-];
+
+  getItem('Settings', 'settings', <SettingOutlined />, [
+    getItem('Language', '/lang', <MdOutlineLanguage />),
+    getItem('Province/City', '/province', <MdOutlineLocationCity />),
+    getItem('Currency', '/currency', <BsCashStack />),
+    getItem('Payment Methods', '/payment_method', <MdOutlinePayments />)
+  ])
+]
 
 const MainLayout = () => {
-  const { profile, logout } = profileStore();
+  const { profile, logout, permission } = profileStore()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
-  const [openKeys, setOpenKeys] = useState([]);
+  const [collapsed, setCollapsed] = useState(false)
+  const [openKeys, setOpenKeys] = useState([])
+  const [items, setItems] = useState([])
+  // const protectRoute = () => {
+  //   let findIndex = permission?.findIndex(
+  //     item => '/' + item.web_route_key === location.pathname
+  //   )
 
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
+  //   if (findIndex === -1) {
+  //     for (let i = 0; i < permission?.length; i++) {
+  //       if (permission[i].web_route_key !== null) {
+  //         navigate(permission[i].web_route_key)
+  //         break
+  //       }
+  //     }
+  //   }
+  // }
+  // const protectRoute = () => {
+  //   if (!permission || permission.length === 0) return
+
+  //   let findIndex = permission.findIndex(
+  //     item =>
+  //       '/' + item.web_route_key === location.pathname ||
+  //       item.web_route_key === location.pathname ||
+  //       (location.pathname === '/' && item.web_route_key == null)
+  //   )
+
+  //   if (findIndex === -1) {
+  //     for (let i = 0; i < permission.length; i++) {
+  //       if (permission[i].web_route_key !== null) {
+  //         navigate('/' + permission[i].web_route_key)
+  //         break
+  //       }
+  //     }
+  //   }
+  // }
+  const protectRoute = () => {
+    if (!permission || permission.length === 0) return
+    if (location.pathname === '/profile') return
+    // Find current route permission
+    let findIndex = permission.findIndex(item => {
+      const route = item.web_route_key
+
+      return (
+        (route && '/' + route === location.pathname) ||
+        route === location.pathname ||
+        (location.pathname === '/' && route == null)
+      )
+    })
+
+    // If no access, redirect to first valid route
+    if (findIndex === -1) {
+      for (let i = 0; i < permission.length; i++) {
+        const route = permission[i].web_route_key
+        // Skip invalid routes
+        if (
+          route &&
+          typeof route === 'string' &&
+          route.trim() !== '' &&
+          route !== 'http:' &&
+          route !== 'https:' &&
+          !route.startsWith('http:') &&
+          !route.startsWith('https:')
+        ) {
+          const cleanRoute = route.startsWith('/') ? route : '/' + route
+
+          navigate(cleanRoute)
+          break
+        }
+      }
+    }
+  }
+  const renderMenuLeft = () => {
+    let menu_left = []
+    items_menu_left_tmp.forEach(item => {
+      let findLevelIndex = permission?.findIndex(
+        item1 =>
+          '/' + item1.web_route_key === item.key ||
+          item1.web_route_key === item.key ||
+          (item.key === '/' && item1.web_route_key == null)
+      )
+
+      let childTmp = []
+      if (item?.children?.length > 0) {
+        item.children.forEach(data1 => {
+          permission?.forEach(data2 => {
+            if (
+              data2.web_route_key === data1.key ||
+              '/' + data2.web_route_key === data1.key
+            ) {
+              childTmp.push(data1)
+            }
+          })
+        })
+      }
+
+      if (childTmp.length > 0) {
+        item.children = childTmp
+        menu_left.push(item)
+      } else if (findLevelIndex !== -1) {
+        menu_left.push(item)
+      }
+    })
+    setItems(menu_left)
+  }
 
   useEffect(() => {
-    if (!profile) {
-      navigate("/login");
-    }
-  }, [profile, navigate]);
+    if (!profile) navigate('/login')
+  }, [profile])
 
-  const onOpenChange = (keys) => {
-    // បញ្ជី Key របស់ Menu ធំៗ (Root Submenu)
+  useEffect(() => {
+    if (permission && permission.length > 0) {
+      renderMenuLeft()
+      protectRoute()
+    }
+  }, [permission, location.pathname])
+
+  const onOpenChange = keys => {
     const rootSubmenuKeys = [
-      "sales",
-      "report",
-      "customer",
-      "inventory",
-      "purchase",
-      "expense",
-      "employee",
-      "user",
-      "settings",
-    ];
-    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
-
-    if (latestOpenKey && rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
-      setOpenKeys(keys);
+      'report',
+      'customer',
+      'inventory',
+      'purchase',
+      'expense',
+      'employee',
+      'user',
+      'settings'
+    ]
+    const latestOpenKey = keys.find(key => !openKeys.includes(key))
+    if (!rootSubmenuKeys.includes(latestOpenKey)) {
+      setOpenKeys(keys)
     } else {
-      setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
+      setOpenKeys(latestOpenKey ? [latestOpenKey] : [])
     }
-  };
+  }
 
-  if (!profile) return null;
-
-  // Dropdown Items (Notifications & Profile) - ទុកកូដដដែលរបស់អ្នក
-  const notificationItems = [
-    {
-      key: "header",
-      label: (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "4px 0",
-          }}
-        >
-          <span style={{ fontWeight: "bold", fontSize: "14px" }}>
-            ការជូនដំណឹង
-          </span>
-          <a style={{ fontSize: "11px", color: "#1890ff" }}>អានទាំងអស់</a>
-        </div>
-      ),
-      type: "group",
-    },
-    { type: "divider" },
-    {
-      key: "1",
-      label: (
-        <Space align="start" style={{ padding: "8px 0" }}>
-          <Avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" />
-          <div>
-            <div style={{ fontWeight: 500, fontSize: "13px" }}>
-              សួស្តី! មានការកម្ម៉ង់ថ្មី #8892
-            </div>
-            <div style={{ fontSize: "11px", color: "#8c8c8c" }}>២ នាទីមុន</div>
-          </div>
-        </Space>
-      ),
-    },
-  ];
-  const items_drop_image = [
-    {
-      type: "group",
-      label: (
-        <div style={{ padding: "4px 4px", cursor: "default" }}>
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: 14,
-              color: "#111827",
-              lineHeight: "1.5",
-            }}
-          >
-            {profile?.name}
-          </div>
-          <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>
-            {profile?.role}
-          </div>
-        </div>
-      ),
-    },
-    { type: "divider" },
-    { key: "1", label: "ប្រវត្តិរូប", icon: <UserOutlined /> },
-    { key: "2", label: "ការកំណត់", icon: <SettingOutlined /> },
-    { type: "divider" },
-    { key: "logout", label: "ចាកចេញ", icon: <LogoutOutlined />, danger: true },
-  ];
+  if (!profile) return null
 
   return (
     <ConfigProvider
       theme={{
+        token: {
+          colorPrimary: '#6366f1',
+          borderRadius: 10,
+          colorBgLayout: '#f8fafc'
+        },
         components: {
           Menu: {
-            itemBg: "transparent",
-            itemSelectedBg: "#332f2e",
-            itemSelectedColor: "#ffffff",
-            itemHoverBg: "#f1f5f9",
-            itemColor: "#64748b",
-            itemMarginInline: 12,
-            itemBorderRadius: 8,
-          },
-        },
+            darkItemBg: '#000',
+            darkItemSelectedBg: '#6366f1',
+            darkItemSelectedColor: '#fff',
+            darkSubMenuItemBg: '#0a0a0a'
+          }
+        }
       }}
     >
-      <Layout style={{ minHeight: "100vh" }}>
-        {/* --- Sidebar (Sider) --- */}
+      <Layout className='min-h-screen'>
+        {/* sidebar */}
         <Sider
+          trigger={null}
           collapsible
           collapsed={collapsed}
-          onCollapse={(value) => setCollapsed(value)}
-          breakpoint="lg"
-          collapsedWidth={80}
-          width={280}
-          theme="light"
-          trigger={null}
+          width={260}
           style={{
-            overflow: "auto",
-            height: "100vh",
-            position: "fixed",
+            background: '#000',
+            position: 'fixed',
             left: 0,
             top: 0,
             bottom: 0,
+            height: '100vh',
             zIndex: 1001,
-            boxShadow: "2px 0 8px 0 rgba(29,33,41,.05)",
-            borderRight: "1px solid #e5e7eb",
+            display: 'flex',
+            flexDirection: 'column'
           }}
+          className='flex flex-col border-r border-white/5 shadow-2xl'
         >
+          {/*  logo section */}
           <div
-            style={{
-              height: 64,
-              display: "flex",
-              alignItems: "center",
-              padding: "0 20px",
-              borderBottom: "1px solid #f0f0f0",
-              background: "#fff",
-              justifyContent: collapsed ? "center" : "flex-start",
-            }}
+            className={`h-20 flex items-center px-6 border-b border-white/5 bg-black sticky top-0 z-20 transition-all ${
+              collapsed ? 'justify-center px-0' : ''
+            }`}
           >
             <img
               src={logo}
-              alt="logo"
-              style={{ width: 36, height: 36, flexShrink: 0, borderRadius: 8 }}
+              alt='logo'
+              className='w-10 h-10 object-contain rounded-xl shadow-lg shadow-indigo-500/20'
             />
             {!collapsed && (
-              <span
-                style={{
-                  marginLeft: 12,
-                  fontWeight: 800,
-                  fontSize: 18,
-                  color: "#1a1a1a",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                CMS <span style={{ color: "#d4af37" }}>POS</span>
-              </span>
+              <div className='ml-3 flex flex-col'>
+                <span className='text-white font-bold text-[16px] leading-tight'>
+                  APEX <span className='text-indigo-500'>POS</span>
+                </span>
+                <span className='text-[9px] text-slate-500 font-bold tracking-[0.2em] mt-0.5'>
+                  MANAGEMENT
+                </span>
+              </div>
             )}
           </div>
 
-          <Menu
-            mode="inline"
-            openKeys={openKeys}
-            onOpenChange={onOpenChange}
-            selectedKeys={[location.pathname]}
-            items={items}
-            onClick={(item) => navigate(item.key)}
-            style={{ borderInlineEnd: "none", marginTop: 8 }}
-          />
-        </Sider>
-
-        {/* --- Main Layout Content --- */}
-        <Layout
-          style={{ marginLeft: collapsed ? 80 : 280, transition: "all 0.2s" }}
-        >
-          <Header
+          {/*  menu section */}
+          <div
+            className='flex-1 overflow-y-auto overflow-x-hidden'
             style={{
-              padding: "0 24px",
-              background: colorBgContainer,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              position: "sticky",
-              top: 0,
-              zIndex: 1000,
-              width: "100%",
-              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+              maxHeight: 'calc(100vh - 80px)',
+              paddingBottom: '20px'
             }}
           >
-            <Space size={16}>
-              {/* --- Toggle Button --- */}
+            <Menu
+              theme='dark'
+              mode='inline'
+              items={items}
+              openKeys={openKeys}
+              onOpenChange={onOpenChange}
+              selectedKeys={[location.pathname]}
+              onClick={e => navigate(e.key)}
+              style={{ background: 'transparent' }}
+              className='border-none mt-2 font-medium'
+            />
+          </div>
+        </Sider>
+
+        {/* main layout */}
+        <Layout
+          className='transition-all duration-300'
+          style={{ marginLeft: collapsed ? 80 : 260 }}
+        >
+          {/* header */}
+          <Header className='sticky top-0 z-[1000] flex items-center justify-between bg-white/80 backdrop-blur-md px-6 h-16 border-b border-gray-100 shadow-sm'>
+            <div className='flex items-center gap-4'>
               <Button
-                type="text"
+                type='text'
                 icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                 onClick={() => setCollapsed(!collapsed)}
-                style={{
-                  fontSize: "18px",
-                  width: 40,
-                  height: 40,
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "#f5f5f5",
-                }}
+                className='w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600'
               />
-
               <Input
-                placeholder="ស្វែងរកទិន្នន័យ..."
-                prefix={<SearchOutlined style={{ color: "#8c8c8c" }} />}
-                style={{
-                  width: "100%",
-                  maxWidth: 320,
-                  borderRadius: "10px",
-                  background: "#ffffff",
-                  border: "1px solid #d9d9d9",
-                  height: "35px",
-                  fontSize: "14px",
-                }}
+                placeholder='Search metrics...'
+                prefix={<SearchOutlined className='text-slate-400' />}
+                className='hidden md:flex w-72 h-10 bg-slate-50 border-none rounded-xl focus:bg-white transition-all'
               />
-            </Space>
+            </div>
 
-            <Space size={16}>
-              <Dropdown menu={{ items: notificationItems }} trigger={["click"]}>
-                <Badge count={5} size="small" offset={[-2, 5]}>
-                  <div
-                    style={{
-                      padding: 8,
-                      cursor: "pointer",
-                      borderRadius: "50%",
-                      background: "#f5f5f5",
-                      display: "flex",
-                    }}
-                  >
-                    <BellOutlined style={{ fontSize: 18, color: "#595959" }} />
-                  </div>
-                </Badge>
-              </Dropdown>
-
-              <div
-                style={{
-                  height: 20,
-                  width: 1,
-                  background: "#f0f0f0",
-                  margin: "0 8px",
-                }}
-              />
-
+            <Space size={20}>
+              <Badge count={5} size='small'>
+                <Button
+                  type='text'
+                  icon={<BellOutlined className='text-xl' />}
+                  className='w-10 h-10 rounded-xl'
+                />
+              </Badge>
+              <div className='h-8 w-[1px] bg-slate-200 mx-1' />
               <Dropdown
                 menu={{
-                  items: items_drop_image,
-                  onClick: (item) => {
-                    if (item.key === "logout") {
-                      navigate("login");
-                      logout();
+                  items: [
+                    {
+                      key: 'profile',
+                      label: 'Profile',
+                      icon: <UserOutlined />
+                    },
+                    {
+                      key: 'settings',
+                      label: 'Settings',
+                      icon: <SettingOutlined />
+                    },
+                    {
+                      type: 'divider'
+                    },
+                    {
+                      key: 'logout',
+                      label: 'Logout',
+                      icon: <LogoutOutlined />,
+                      danger: true
                     }
-                  },
+                  ],
+                  onClick: e => {
+                    if (e.key === 'logout') {
+                      logout()
+                    } else if (e.key === 'profile') {
+                      navigate('/profile')
+                    } else if (e.key === 'settings') {
+                      navigate('/settings')
+                    }
+                  }
                 }}
-                placement="bottomRight"
               >
-                <Space
-                  style={{
-                    cursor: "pointer",
-                    padding: "4px 8px",
-                    borderRadius: 8,
-                  }}
-                >
-                  <Space
-                    size={12}
-                    style={{ cursor: "pointer", padding: "4px 8px" }}
-                  >
-                    {/* --- image Avatar --- */}
-                    <Avatar
-                      src={config.image_path + profile?.profile?.image}
-                      size={40}
-                      style={{
-                        border: "2px solid #e6f7ff",
-                        backgroundColor: "#87d068",
-                      }}
-                      icon={<UserOutlined />}
-                    />
-                    {/* --- role --- */}
-                    {!collapsed && (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          lineHeight: "1.2",
-                        }}
-                      >
-                        <Text
-                          strong
-                          style={{ fontSize: "14px", color: "#1f1f1f" }}
-                        >
-                          {profile?.name} {/* បង្ហាញឈ្មោះអ្នកប្រើប្រាស់ */}
-                        </Text>
-                        <Text type="secondary" style={{ fontSize: "12px" }}>
-                          {profile?.profile?.type}{" "}
-                        </Text>
-                      </div>
-                    )}
-                  </Space>
-                  <h1 style={{ fontSize: 10 }}>{profile?.image}</h1>
-                  <h1>{profile?.image}</h1>
-                  {!collapsed && (
-                    <div style={{ lineHeight: 1.2 }}>
-                      <div
-                        style={{
-                          fontWeight: 600,
-                          fontSize: 13,
-                          color: "#1f1f1f",
-                        }}
-                      >
-                        <h1>{profile?.image}</h1>
-                      </div>
-                      <Text type="secondary" style={{ fontSize: 11 }}>
-                        {profile?.role}
-                      </Text>
+                <div className='flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1.5 px-2 rounded-xl transition-all'>
+                  <div className='text-right hidden sm:block'>
+                    <div className='text-sm font-bold text-slate-800 leading-none'>
+                      {profile?.name}
                     </div>
-                  )}
-                </Space>
+                    <div className='text-[11px] text-slate-500 font-medium mt-1 uppercase'>
+                      {profile?.role}
+                    </div>
+                  </div>
+                  <Avatar
+                    src={
+                      profile?.profile?.image
+                        ? config.image_path +
+                          profile.profile.image +
+                          '?t=' +
+                          Date.now()
+                        : avatar
+                    }
+                    size={40}
+                    className='border-2 border-indigo-50 shadow-sm'
+                    icon={<UserOutlined />}
+                  />
+                </div>
               </Dropdown>
             </Space>
           </Header>
 
-          <Content style={{ margin: "20px 20px 0" }}>
-            <div
-              style={{
-                padding: 24,
-                minHeight: "calc(100vh - 170px)",
-                background: colorBgContainer,
-                borderRadius: borderRadiusLG,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-              }}
-            >
+          {/* content */}
+          <Content className='p-6 min-h-[calc(100vh-140px)]'>
+            <div className='animate-in fade-in duration-500'>
               <Outlet />
             </div>
           </Content>
 
-          <Footer
-            style={{ textAlign: "center", color: "#94a3b8", fontSize: 12 }}
-          >
-            KHMER CASH POS SYSTEM ©{new Date().getFullYear()} -
-            គ្រប់គ្រងអាជីវកម្មបែបឆ្លាតវៃ
+          {/* footer */}
+          <Footer className='bg-transparent text-center py-6 text-slate-400 text-xs font-medium'>
+            © {new Date().getFullYear()} APEX POS SYSTEM. ALL RIGHTS RESERVED.
           </Footer>
         </Layout>
       </Layout>
     </ConfigProvider>
-  );
-};
+  )
+}
 
-export default MainLayout;
+export default MainLayout
+

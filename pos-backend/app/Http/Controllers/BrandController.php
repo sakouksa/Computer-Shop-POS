@@ -3,11 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Brand;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
-class BrandController extends Controller
+class BrandController extends Controller implements hasMiddleware
 {
+    /**
+     * Set up middleware based on the provided permission list.
+     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:brand.view', only: ['index']),
+            new Middleware('permission:brand.viewone', only: ['show']),
+            new Middleware('permission:brand.create', only: ['store']),
+            new Middleware('permission:brand.update', only: ['update']),
+            new Middleware('permission:brand.delete', only: ['destroy']),
+        ];
+    }
 
     // Display a listing of the resource.
 
@@ -16,8 +31,8 @@ class BrandController extends Controller
         $query = Brand::query();
 
         // Search តាមឈ្មោះ
-        if ($req->has('text_search')) {
-            $query->where("name", "LIKE", "%" . $req->input('text_search') . "%");
+        if ($req->has('txt_search')) {
+            $query->where("name", "LIKE", "%" . $req->input('txt_search') . "%");
         }
 
         // Filter តាម Status
@@ -30,6 +45,7 @@ class BrandController extends Controller
 
         return response()->json([
             'list' => $list,
+            'total' => $query->count(),
         ]);
     }
 

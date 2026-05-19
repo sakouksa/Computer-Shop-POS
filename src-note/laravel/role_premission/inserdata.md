@@ -15,9 +15,13 @@ insert into role_permission (role_id,permission_id) values
 ...
 (1,85),
 
-INSERT INTO role_permission (role_id, permission_id)
-SELECT 48 AS role_id, id FROM permissions;
+-- 1. Delete existing permissions for role_id 48 to start fresh
+DELETE FROM permission_role WHERE role_id = 48;
 
+-- 2. Insert all current permissions for role_id 48
+INSERT INTO permission_role (role_id, permission_id)
+SELECT 48 AS role_id, id
+FROM permissions;
 user_id = 1 | permission[12,33,4,5,5,2]
 
 SELECT

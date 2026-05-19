@@ -20,11 +20,13 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
+
     // Return an array of custom claims for the JWT
     public function getJWTCustomClaims()
     {
         return [];
     }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -34,7 +36,10 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'status',
+        'last_login_at'
     ];
+
     //relationship in profile one-to-one
     public function profile()
     {

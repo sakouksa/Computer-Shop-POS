@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Contracts\Providers\JWT;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -31,7 +32,7 @@ class AuthController extends Controller
         ]);
         //Handle the image upload if exist
         $imagePath = null;
-        if($request->hasFile('image')){
+        if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('profile', 'public');
         }
         //create the profile
@@ -44,9 +45,10 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => $user->load('profile'),
-            'message' => 'ការចុះឈ្មោះអ្នកប្រើប្រាស់បានជោគជ័យ',
+            'message' => 'Register successfully ',
         ], 201);
     }
+
     // Login a user and return a JWT token
     public function login(Request $request)
     {
@@ -59,10 +61,29 @@ class AuthController extends Controller
         if (!$token = JWTAuth::attempt($request->only('email', 'password'))) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
+//        Download User and Load Profile
+        $user = JWTAuth::user();
+        $user->load('profile');
+        //Using DB Facade (Raw Query)
+        $sqlpermission = "
+        SELECT p.*
+        FROM permissions p
+        INNER JOIN permission_role rp ON p.id = rp.permission_id
+        INNER JOIN roles r ON rp.role_id = r.id
+        INNER JOIN user_roles ur ON r.id = ur.role_id
+        WHERE ur.user_id = ? ";
+        $permissions = DB::select($sqlpermission, [$user->id]);
 
+        $payload = [
+            "user" => $user,
+            "permissions" => $permissions,
+        ];
+        $token = JWTAuth::claims($payload)->fromUser(JWTAuth::user()); // token payload
         return response()->json([
             'access_token' => $token,
-            'user' => JWTAuth::user()->load('profile'),
+            'user' => $user,
+            'permission' => $permissions,
+            'message' => 'Login successfully',
         ]);
     }
 }

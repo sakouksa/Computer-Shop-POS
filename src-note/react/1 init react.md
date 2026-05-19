@@ -5,6 +5,6 @@ npm create vite@latest
 - react
 - Javascript
 
-- cd project_name
+- cd project_name //frontend-reactJs
 - npm install
 - npm run dev

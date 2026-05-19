@@ -6,21 +6,40 @@ use App\Http\Requests\ProvinceRequest;
 use App\Models\Province;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ProvinceController extends Controller
+class ProvinceController extends Controller implements HasMiddleware
 {
+    /**
+     * Define middleware for the controller actions.
+     */
+    public static function middleware(): array
+    {
+        return [
+            // Protect actions with specific permissions
+            new Middleware('permission:province.view', only: ['index', 'show']),
+            new Middleware('permission:province.create', only: ['store']),
+            new Middleware('permission:province.update', only: ['update']),
+            new Middleware('permission:province.delete', only: ['destroy']),
+        ];
+    }
+
     // Display a listing of the resource.
     public function index(Request $req)
     {
-        $province = Province::query(); //ORM eloquent
+        $province = Province::query();
+
         if ($req->has("text_search")) {
-            // $role->where("name", "=", $req->input("text_search")); // ទាល់តែដូចគ្នាបាន search filter ចេញ
-            $province->where("name", "LIKE", "%" . $req->input("text_search") . "%"); //Function នេះ ស្រដៀងក៌វា search filter ចេញដែលគេប្រើ "LIKE"
-        };
+            $province->where("name", "LIKE", "%" . $req->input("text_search") . "%");
+        }
+
         if ($req->has("status")) {
             $province->where("status", "=", $req->input("status"));
         }
+
         $list = $province->orderBy('id', 'desc')->get();
+
         return response()->json([
             'list' => $list,
         ]);
@@ -36,14 +55,13 @@ class ProvinceController extends Controller
             'distand_from_city' => 'required|numeric',
             'status' => 'required|boolean',
         ]);
+
         $data = Province::create($validation);
 
-        return response()->json(
-            [
-                'data' => $data,
-                'message' => 'រក្សាទុកបានជោគជ័យ',
-            ]
-        );
+        return response()->json([
+            'data' => $data,
+            'message' => 'Saved successfully',
+        ]);
     }
 
     // Display the specified resource.
@@ -64,11 +82,13 @@ class ProvinceController extends Controller
             'distand_from_city' => 'required|numeric',
             'status' => 'required|boolean',
         ]);
+
         $data = Province::find($id);
-        if (! $data) {
+
+        if (!$data) {
             return response()->json([
                 'error' => [
-                    'update' => 'រកមិនឃើញទិន្នន័យដើម្បីកែប្រែឡើយ!',
+                    'update' => 'Data not found for update!',
                 ],
             ]);
         } else {
@@ -76,7 +96,7 @@ class ProvinceController extends Controller
             $data->update();
 
             return response()->json([
-                'message' => 'ធ្វើបច្ចុប្បន្នភាពបានជោគជ័យ',
+                'message' => 'Updated successfully',
             ]);
         }
     }
@@ -85,17 +105,18 @@ class ProvinceController extends Controller
     public function destroy(string $id)
     {
         $data = Province::find($id);
-        if (! $data) {
+
+        if (!$data) {
             return response()->json([
                 'error' => [
-                    'delete' => 'រកមិនឃើញទិន្នន័យដែលត្រូវលុបឡើយ!',
+                    'delete' => 'Data not found for deletion!',
                 ],
             ]);
         } else {
             $data->delete();
 
             return response()->json([
-                'message' => 'លុបទិន្នន័យបានជោគជ័យ',
+                'message' => 'Deleted successfully',
             ]);
         }
     }
